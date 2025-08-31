@@ -1,0 +1,55 @@
+{
+  "type": "module",
+  "name": "app-gym",
+  "version": "1.0.0",
+  "description": "Aplicación de escritorio para gestión de gimnasio",
+  "author": "Tu Nombre",
+  "main": "main.js",
+  "scripts": {
+    "react-build": "cd frontend && npm run build",
+    "electron-dev": "electron .",
+    "electron-pack": "npm run react-build && electron-builder"
+  },
+"dependencies": {
+  "electron-squirrel-startup": "^1.0.1",
+  "express": "^4.19.2",
+  "cors": "^2.8.5",
+  "cookie-parser": "^1.4.6",
+  "mongoose": "^8.4.1",
+  "bcryptjs": "^2.4.3",
+  "jsonwebtoken": "^9.0.2",
+  "dotenv": "^16.4.5",
+  "node-cron": "^3.0.3",
+  "zod": "^3.22.2"
+},
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.appgym.desktop",
+    "productName": "AppGym",
+    "files": [
+      "main.js",
+      "backend/**/*",
+      "frontend/dist/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": "nsis",
+      "sign": false,
+      "signingHashAlgorithms": [],
+      "publisherName": null
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}
