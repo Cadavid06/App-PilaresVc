@@ -1,21 +1,12 @@
 import cron from "node-cron";
-import MemberShip from "../models/memberShip.models.js"
+import MemberShip from "../models/memberShip.models.js";
 
-cron.schedule("0 0 * * *", async () => { // todos los días a medianoche
+// Se ejecuta a las 00:00 del día 1 de cada mes
+cron.schedule("0 0 1 * *", async () => {
   console.log("Ejecutando cron job para actualizar membresías...");
 
-  const today = new Date();
+  // Actualizar todas las membresías al estado "Expirada"
+  const result = await MemberShip.updateMany({}, { status: "Expirada" });
 
-  // Buscar membresías que ya hayan vencido
-  const expiredMemberships = await MemberShip.find({
-    endDate: { $lt: today },
-    status: { $ne: "Expirada" }
-  });
-
-  for (const membership of expiredMemberships) {
-    membership.status = "Expirada";
-    await membership.save();
-  }
-
-  console.log(`Membresías expiradas actualizadas: ${expiredMemberships.length}`);
+  console.log(`Membresías expiradas actualizadas: ${result.modifiedCount}`);
 });

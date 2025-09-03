@@ -1,91 +1,90 @@
+import calcularDeuda from "../libs/calculateDebt.js";
 import MemberShip from "../models/memberShip.models.js";
-import MembershipHistory from "../models/membershipHistory.modal.js";
-import MemberShipType from "../models/memberShipType.models.js";
-
-export const createMemberShipTypes = async (req, res) => {
-  const { type, durationInDays, price } = req.body;
-
-  const newMemberShipType = new MemberShipType({
-    type,
-    durationInDays,
-    price,
-  });
-  const MemberShipTypeSaved = newMemberShipType.save();
-  res.json(MemberShipTypeSaved);
-};
 
 export const createMembership = async (req, res) => {
   try {
-    const { clientName, clientDocument, clientPhone, memberShipType, amount } =
-      req.body;
+    const {
+      clientName,
+      documentType,
+      clientDocument,
+      clientPhone,
+      clientEmail,
+      birthdate,
+      amount,
+    } = req.body;
 
-    const type = await MemberShipType.findById(memberShipType);
-    if (!type)
+    const MONTHLY_FEE = 20000;
+    const now = new Date();
+
+    const parsedAmount = Number(amount); // 🔹 Asegurar que es número
+
+    if (parsedAmount <= 0) {
       return res
-        .status(404)
-        .json({ message: "Tipo de membresía no encontrada" });
-
-    const startDate = new Date();
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + type.durationInDays);
-
-    const status = "Activa";
-
-    if (amount <= 0)
-      return res.status(404).json({
-        message: "La cantidad no puede ser menor o igual a 0",
-      });
-
-    if (amount > type.price)
+        .status(400)
+        .json({ message: "Debe realizar al menos un abono" });
+    }
+    if (parsedAmount > MONTHLY_FEE) {
       return res.status(400).json({
-        message: `La cantidad excede el valor total de la membresía: ${type.price}`,
+        message: `El valor máximo de la mensualidad es ${MONTHLY_FEE}`,
       });
+    }
 
-    const totalPaid = amount;
-
-    const paymentDate = new Date();
+    let status = "Pendiente";
+    if (parsedAmount === MONTHLY_FEE) status = "Activa";
 
     const newMemberShip = new MemberShip({
       clientName,
+      documentType,
       clientDocument,
       clientPhone,
-      memberShipType,
-      startDate,
-      endDate,
+      clientEmail,
+      birthdate,
       status,
       payments: [
         {
-          amount,
-          date: paymentDate,
+          amount: parsedAmount,
+          date: now,
+          month: now.getMonth() + 1,
+          year: now.getFullYear(),
         },
       ],
-      totalPaid,
+      totalPaid: parsedAmount,
       admin: req.admin.id,
     });
-    const MemberShipSaved = await newMemberShip.save();
-    res.json(MemberShipSaved);
+
+    const saved = await newMemberShip.save();
+    res.json(saved);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error al crear la membresía" });
+    res.status(500).json({ message: "Error al registrar jugador" });
   }
 };
 
 export const getMemberships = async (req, res) => {
-  const memberShipsFound = await MemberShip.find()
-    .populate("memberShipType")
-    .sort({ clientName: 1 });
+  const memberShipsFound = await MemberShip.find().sort({ clientName: 1 });
   if (!memberShipsFound)
     return res.status(404).json({ message: "Membresía no encontrada" });
   res.json(memberShipsFound);
 };
 
 export const getMembershipById = async (req, res) => {
-  const memberShipFound = await MemberShip.findById(req.params.id).populate(
-    "memberShipType"
-  );
-  if (!memberShipFound)
-    return res.status(404).json({ message: "Membresía no encontrada" });
-  res.json(memberShipFound);
+  try {
+    const member = await MemberShip.findById(req.params.id);
+    if (!member) {
+      return res.status(404).json({ message: "Membresía no encontrada" });
+    }
+
+    // Calcula la deuda usando la función corregida
+    const deuda = calcularDeuda(member);
+
+    return res.json({
+      ...member.toObject(),
+      deuda,
+    });
+  } catch (error) {
+    console.error("Error al obtener la membresía:", error);
+    return res.status(500).json({ message: "Error del servidor" });
+  }
 };
 
 export const getDaysLeft = async (req, res) => {
@@ -109,13 +108,26 @@ export const getDaysLeft = async (req, res) => {
 };
 
 export const updateUserData = async (req, res) => {
-  const { id } = req.params; 
-  const { clientName, clientDocument, clientPhone } = req.body;
+  const { id } = req.params;
+  const {
+    clientName,
+    documentType,
+    clientDocument,
+    clientPhone,
+    clientEmail,
+    birthdate,
+  } = req.body;
 
-  if (!clientName && !clientDocument && !clientPhone) {
+  if (
+    !clientName &&
+    !documentType &&
+    !clientDocument &&
+    !clientPhone &&
+    !clientEmail &&
+    !birthdate
+  ) {
     return res.status(400).json({
-      message:
-        "No se permite cambiar el tipo de membresía. Utilice el apartado de renovación.",
+      message: "No se enviaron datos válidos para actualizar.",
     });
   }
 
@@ -124,118 +136,172 @@ export const updateUserData = async (req, res) => {
       id,
       {
         ...(clientName && { clientName }),
+        ...(documentType && { documentType }),
         ...(clientDocument && { clientDocument }),
         ...(clientPhone && { clientPhone }),
+        ...(clientEmail && { clientEmail }),
+        ...(birthdate && { birthdate }),
       },
       { new: true }
-    )
-    .populate('memberShipType'); // ¡Agrega esta línea!
+    );
 
     if (!updatedUser) {
-      return res.status(404).json({ message: "Cliente no encontrado" });
+      return res.status(404).json({ message: "Jugador no encontrado" });
     }
 
     res.json({
-      message: "Datos del cliente actualizados correctamente",
+      message: "Datos del jugador actualizados correctamente",
       user: updatedUser,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error al actualizar el cliente", error });
+    res.status(500).json({ message: "Error al actualizar el jugador", error });
   }
 };
 
 export const renewMembership = async (req, res) => {
-  const { memberShipType, amount } = req.body;
+  try {
+    const { id } = req.params;
+    let { amount } = req.body;
+    const MONTHLY_FEE = 20000;
 
-  const memberShipFound = await MemberShip.findById(req.params.id);
-  if (!memberShipFound)
-    return res.status(404).json({ message: "Membresía no encontrada" });
+    amount = Number(amount);
+    if (!Number.isFinite(amount) || amount <= 0 || amount > MONTHLY_FEE) {
+      return res.status(400).json({
+        message: "Monto de renovación inválido. Debe ser entre $1 y $20,000",
+      });
+    }
 
-  const status = memberShipFound.status;
-  if (status === "Activa")
-    return res.status(404).json({
-      message: "La membresía se encuentra activa",
+    const member = await MemberShip.findById(id);
+    if (!member) {
+      return res.status(404).json({ message: "Jugador no encontrado" });
+    }
+
+    if (member.status !== "Expirada") {
+      return res.status(400).json({
+        message: "No se puede renovar. La membresía no está expirada.",
+      });
+    }
+
+    const now = new Date();
+    const deuda = calcularDeuda(member, now, MONTHLY_FEE);
+
+    if (deuda > 0) {
+      return res.status(400).json({
+        message: `No puede renovar, aún debe $${deuda} de meses anteriores.`,
+      });
+    }
+
+    // Borrón y cuenta nueva, si no tiene deuda atrasada.
+    // This is the "start of a new cycle" functionality.
+    member.payments = [];
+    member.totalPaid = 0;
+
+    member.payments.push({
+      amount,
+      date: now,
+      month: now.getMonth() + 1,
+      year: now.getFullYear(),
     });
 
-  const type = await MemberShipType.findById(memberShipType);
-  if (!type)
-    return res.status(404).json({ message: "Tipo de menbresía no encontrada" });
+    member.totalPaid = amount;
+    member.status = amount === MONTHLY_FEE ? "Activa" : "Pendiente";
 
-  if (amount <= 0)
-    return res.status(404).json({
-      message: "El importe no puede ser menor o igual a 0",
+    await member.save();
+    return res.json({
+      ...member.toObject(),
+      deuda,
     });
-
-  if (amount > type.price)
-    return res.status(404).json({
-      message: `La cantidad excede el valor total de la membresía: ${type.price}`,
-    });
-
-  await MembershipHistory.create({
-    id: memberShipFound._id,
-    type: memberShipType,
-    payments: memberShipFound.payments,
-  });
-
-  memberShipFound.memberShipType = memberShipType;
-
-  const startDate = new Date();
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + type.durationInDays);
-
-  memberShipFound.startDate = startDate;
-  memberShipFound.endDate = endDate;
-  memberShipFound.status = "Activa";
-
-  memberShipFound.payments = [{ amount, date: new Date() }];
-  memberShipFound.totalPaid = amount;
-
-  await memberShipFound.save();
-
-  const updatedMembership = await MemberShip.findById(
-    memberShipFound._id
-  ).populate("memberShipType");
-
-  res.json(updatedMembership);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error al renovar la mensualidad" });
+  }
 };
 
 export const addPayments = async (req, res) => {
-  const { amount } = req.body;
+  try {
+    let { amount } = req.body;
+    const MONTHLY_FEE = 20000;
 
-  const memberShipFound = await MemberShip.findById(req.params.id).populate(
-    "memberShipType"
-  );
-  if (!memberShipFound)
-    return res.status(404).json({ message: "Membresía no encontrada" });
+    amount = Number(amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return res.status(400).json({ message: "Monto inválido" });
+    }
 
-  const priceMemberShip = memberShipFound.memberShipType.price;
+    const member = await MemberShip.findById(req.params.id);
+    if (!member) {
+      return res.status(404).json({ message: "Jugador no encontrado" });
+    }
 
-  if (
-    memberShipFound.totalPaid === priceMemberShip &&
-    memberShipFound.status === "Activa"
-  )
-    return res.status(404).json({
-      message: "El pago mensual ya está cancelado en su totalidad.",
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    const deudaAtrasada = calcularDeuda(member, now, MONTHLY_FEE);
+
+    if (deudaAtrasada > 0) {
+      // Player has an outstanding debt. The payment must not be greater than the debt.
+      if (amount > deudaAtrasada) {
+        return res.status(400).json({
+          message: `El pago no puede ser mayor a la deuda total ($${deudaAtrasada}).`,
+        });
+      }
+    } else {
+      // Player is caught up on past debts. This payment is for the current month.
+      const totalPaidThisMonth = member.payments
+        .filter((p) => p.month === currentMonth && p.year === currentYear)
+        .reduce((sum, p) => sum + p.amount, 0);
+
+      const remainingThisMonth = MONTHLY_FEE - totalPaidThisMonth;
+
+      if (remainingThisMonth <= 0) {
+        return res.status(400).json({
+          message: "La mensualidad del mes actual ya ha sido cubierta.",
+        });
+      }
+
+      if (amount > remainingThisMonth) {
+        return res.status(400).json({
+          message: `El pago no puede ser mayor a la cantidad restante para el mes actual ($${remainingThisMonth}).`,
+        });
+      }
+    }
+
+    // Register the payment
+    member.payments.push({
+      amount,
+      date: now,
+      month: currentMonth,
+      year: currentYear,
     });
 
-  if (amount <= 0)
-    return res.status(404).json({
-      message: "La cantidad no puede ser menor o igual a 0",
-    });
-  const newTotal = memberShipFound.totalPaid + amount;
-  if (amount > priceMemberShip - memberShipFound.totalPaid)
-    return res.status(404).json({
-      message: `La cantidad excede el valor total de la membresía: ${priceMemberShip}`,
-    });
+    member.totalPaid = (member.totalPaid || 0) + amount;
 
-  memberShipFound.payments.push({ amount });
+    // The key change: Update status only if the player was already 'Pendiente'
+    // and this payment makes them 'Activa'.
+    if (member.status === "Pendiente") {
+      const newDebt = calcularDeuda(member, now, MONTHLY_FEE);
 
-  memberShipFound.totalPaid = memberShipFound.payments.reduce(
-    (sum, p) => sum + p.amount,
-    0
-  );
-  await memberShipFound.save();
-  res.json(memberShipFound);
+      if (newDebt <= 0) {
+        const totalPaidThisMonth = member.payments
+          .filter((p) => p.month === currentMonth && p.year === currentYear)
+          .reduce((sum, p) => sum + p.amount, 0);
+
+        if (totalPaidThisMonth >= MONTHLY_FEE) {
+          member.status = "Activa";
+        }
+      }
+    }
+
+    await member.save();
+    const deuda = calcularDeuda(member, now, MONTHLY_FEE);
+    return res.json({
+      ...member.toObject(),
+      deuda,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error agregando pago" });
+  }
 };
 
 export const deleteMembership = async (req, res) => {

@@ -13,13 +13,15 @@ function MembershipFormPage() {
   const navigate = useNavigate();
 
   const onSubmit = handleSubmit(async (data) => {
-    await createMembership(data);
-    navigate("/memberships");
+    const success = await createMembership(data);
+    if (success) {
+      navigate("/memberships");
+    }
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-900 mb-5">
-      <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/50 text-white rounded-2xl shadow-2xl w-full max-w-lg p-8 mx-4">
+    <div className="min-h-screen flex items-center justify-center mb-5">
+      <div className="bg-black/30 backdrop-blur-xs border border-zinc-700/50 text-white rounded-2xl shadow-2xl w-full max-w-lg p-8 mx-4">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white mb-1">
             Registrar Membresía
@@ -55,11 +57,39 @@ function MembershipFormPage() {
             )}
           </div>
 
+          {/* Tipo de documento */}
+          <div>
+            <select
+              {...register("documentType", {
+                required: "Debes seleccionar un tipo de documento",
+              })}
+              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+            >
+              <option value="" className="bg-zinc-800 text-gray-400">
+                Selecciona un tipo de documento
+              </option>
+              <option value="TI" className="bg-zinc-800 text-white">
+                TI
+              </option>
+              <option value="CC" className="bg-zinc-800 text-white">
+                CC
+              </option>
+              <option value="CE" className="bg-zinc-800 text-white">
+                CE
+              </option>
+            </select>
+            {errors.documentType && (
+              <p className="text-red-500 text-sm">
+                {errors.documentType.message}
+              </p>
+            )}
+          </div>
+
           {/* Documento */}
           <div>
             <input
               type="text"
-              placeholder="Identificación"
+              placeholder="Número de documento"
               {...register("clientDocument", {
                 required: "El documento es obligatorio",
               })}
@@ -75,7 +105,7 @@ function MembershipFormPage() {
           {/* Teléfono */}
           <div>
             <input
-              type="text"
+              type="tel"
               placeholder="Teléfono"
               {...register("clientPhone", {
                 required: "El teléfono es obligatorio",
@@ -89,46 +119,37 @@ function MembershipFormPage() {
             )}
           </div>
 
-          {/* Tipo de membresía */}
+          {/* Correo */}
           <div>
-            <select
-              {...register("memberShipType", {
-                required: "Debes seleccionar una membresía",
+            <input
+              type="email"
+              placeholder="Correo electrónico"
+              {...register("clientEmail", {
+                required: "El correo es obligatorio",
               })}
-              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
-            >
-              <option value="" className="bg-zinc-800 text-gray-400">
-                Selecciona una membresía
-              </option>
-              <option
-                value="689a5bc060ac23972d5e7cf0"
-                className="bg-zinc-800 text-white"
-              >
-                Diaria
-              </option>
-              <option
-                value="689a5c4360ac23972d5e7cf2"
-                className="bg-zinc-800 text-white"
-              >
-                Semanal
-              </option>
-              <option
-                value="689a5c7e60ac23972d5e7cf4"
-                className="bg-zinc-800 text-white"
-              >
-                Quincenal
-              </option>
-              <option
-                value="689a5c9d60ac23972d5e7cf6"
-                className="bg-zinc-800 text-white"
-              >
-                Mensual
-              </option>
-            </select>
-            {errors.memberShipType && (
+              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+            {errors.clientEmail && (
               <p className="text-red-500 text-sm">
-                {errors.memberShipType.message}
+                {errors.clientEmail.message}
               </p>
+            )}
+          </div>
+
+          {/* Fecha de nacimiento */}
+          <div>
+            <label className="block text-sm font-semibold text-red-400 mb-2">
+              Fecha de nacimiento
+            </label>
+            <input
+              type="date"
+              {...register("birthdate", {
+                required: "La fecha de nacimiento es obligatoria",
+              })}
+              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+            {errors.birthdate && (
+              <p className="text-red-500 text-sm">{errors.birthdate.message}</p>
             )}
           </div>
 

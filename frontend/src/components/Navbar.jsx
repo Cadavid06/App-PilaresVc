@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { useState } from "react"
-import { Menu, X } from "lucide-react" 
+import { Menu, X, Volleyball } from "lucide-react" 
 
 
 export default function Navbar() {
@@ -11,20 +11,14 @@ export default function Navbar() {
   if (!isAuthenticated) return null
 
   return (
-    <nav className="bg-gradient-to-r from-red-900/90 via-black/95 to-red-800/90 backdrop-blur-xl border border-red-500/20 my-4 mx-4 rounded-2xl shadow-2xl">
+    <nav className="bg-gradient-to-r from-red-800 via-red-950 to-red-800 backdrop-blur-xl border border-red-500/20 my-4 mx-4 rounded-2xl shadow-2xl">
       <div className="flex justify-between items-center px-6 py-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
-          <svg
-            className="w-8 h-8 text-red-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
+          <Volleyball className="w-8 h-8 text-red-400" />
+
           <span className="text-2xl font-bold bg-gradient-to-r from-red-400 to-red-200 bg-clip-text text-transparent">
-            Pilares Voleibol
+            Pilares Voleibol Club
           </span>
         </Link>
 

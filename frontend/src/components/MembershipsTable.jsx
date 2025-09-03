@@ -1,5 +1,3 @@
-// MembershipsTable.jsx
-
 import React, { useState } from "react";
 import { useMembership } from "../context/MembershipContext";
 import {
@@ -16,7 +14,11 @@ import PaymentsModals from "./PaymentsModals";
 import RenewModal from "./RenewModal";
 import ConfirmModal from "./DeleteMembershipModal";
 
-export default function MembershipsTable({ membership }) {
+export default function MembershipsTable({
+  membership,
+  currentPage,
+  itemsPerPage,
+}) {
   const { getMembershipById, getDaysLeft, deleteMembership } = useMembership();
   const [expandedRow, setExpandedRow] = useState(null);
   const [selectedMembership, setSelectedMembership] = useState(null);
@@ -71,10 +73,10 @@ export default function MembershipsTable({ membership }) {
             <thead className="bg-gradient-to-r from-red-600/20 to-red-500/20 border-b border-red-500/30">
               <tr>
                 <th className="px-6 py-4 text-red-400 font-semibold text-sm uppercase tracking-wider">
-                  Cliente
+                  #
                 </th>
                 <th className="px-6 py-4 text-red-400 font-semibold text-sm uppercase tracking-wider">
-                  Tipo de membresía
+                  Jugador
                 </th>
                 <th className="px-6 py-4 text-red-400 font-semibold text-sm uppercase tracking-wider">
                   Estado
@@ -85,34 +87,40 @@ export default function MembershipsTable({ membership }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-700/50">
-              {membership.map((m) => (
+              {membership.map((m, index) => (
                 <React.Fragment key={m._id}>
                   <tr className="hover:bg-zinc-700/30 transition-all duration-200">
+                    {/* Numeración global */}
+                    <td className="px-6 py-4 text-gray-400">
+                      {(currentPage - 1) * itemsPerPage + index + 1}
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="font-semibold text-white">
                           {m.clientName}
                         </span>
-                        <span className="text-sm text-gray-400 sm:hidden">
-                          {m.memberShipType?.type || "—"}
-                        </span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 hidden sm:table-cell">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white-500/20 text-white-400 border border-white-500/30">
-                        {m.memberShipType?.type || m.memberShipType?.name || "—"}
-                      </span>
                     </td>
                     <td className="px-6 py-4">
                       {m.status === "Activa" ? (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                          Activo
+                        </span>
+                      ) : m.status === "Expirada" ? (
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/30">
                           <div className="w-2 h-2 bg-red-400 rounded-full mr-2 animate-pulse"></div>
-                          Activo
+                          Expirado
+                        </span>
+                      ) : m.status === "Pendiente" ? (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                          <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>
+                          Pendiente
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/30">
                           <div className="w-2 h-2 bg-red-400 rounded-full mr-2"></div>
-                          Expirado
+                          Desconocido
                         </span>
                       )}
                     </td>
@@ -180,6 +188,7 @@ export default function MembershipsTable({ membership }) {
           </table>
         </div>
       </div>
+
       {/* Modal ver */}
       <MembershipsModal
         isOpen={isModalOpenMembership}

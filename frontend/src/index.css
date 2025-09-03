@@ -1,6 +1,10 @@
+/* index.css */
 @import "tailwindcss";
 
 body {
-  background-color: #202020;
-  color: white;
+  background-image: url("../public/images/fondo4.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
 }

@@ -2,9 +2,39 @@ export default function MembershipsModal({
   isOpen,
   onClose,
   membership,
-  daysLeft,
 }) {
-  if (!isOpen || !membership || !daysLeft) return null;
+  // Ya no necesitas daysLeft aquí, se puede calcular si es necesario
+  if (!isOpen || !membership) return null;
+
+  // Función para pintar estado con estilos
+  const renderStatus = (status) => {
+    switch (status) {
+      case "Activa":
+        return (
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+            Activa
+          </span>
+        );
+      case "Expirada":
+        return (
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
+            Expirada
+          </span>
+        );
+      case "Pendiente":
+        return (
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+            Pendiente
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30">
+            Desconocido
+          </span>
+        );
+    }
+  };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 p-4">
@@ -63,16 +93,34 @@ export default function MembershipsModal({
                 </h3>
                 <div className="space-y-2">
                   <p className="text-gray-300">
-                    <span className="text-white font-medium">Cliente:</span>{" "}
+                    <span className="text-white font-medium">Jugador:</span>{" "}
                     {membership.clientName}
                   </p>
                   <p className="text-gray-300">
-                    <span className="text-white font-medium">Documento:</span>{" "}
+                    <span className="text-white font-medium">
+                      Tipo de documento:
+                    </span>{" "}
+                    {membership.documentType}
+                  </p>
+                  <p className="text-gray-300">
+                    <span className="text-white font-medium">
+                      N° de documento:
+                    </span>{" "}
                     {membership.clientDocument}
                   </p>
                   <p className="text-gray-300">
                     <span className="text-white font-medium">Teléfono:</span>{" "}
                     {membership.clientPhone}
+                  </p>
+                  <p className="text-gray-300">
+                    <span className="text-white font-medium">
+                      Fecha de nacimiento:
+                    </span>{" "}
+                    {new Date(membership.birthdate).toLocaleDateString()}
+                  </p>
+                  <p className="text-gray-300">
+                    <span className="text-white font-medium">Correo:</span>{" "}
+                    {membership.clientEmail}
                   </p>
                 </div>
               </div>
@@ -97,28 +145,8 @@ export default function MembershipsModal({
                 </h3>
                 <div className="space-y-2">
                   <p className="text-gray-300">
-                    <span className="text-white font-medium">Tipo:</span>{" "}
-                    {membership.memberShipType?.type}
-                  </p>
-                  <p className="text-gray-300">
-                    <span className="text-white font-medium">Inicio:</span>{" "}
-                    {new Date(membership.startDate).toLocaleDateString()}
-                  </p>
-                  <p className="text-gray-300">
-                    <span className="text-white font-medium">Fin:</span>{" "}
-                    {new Date(membership.endDate).toLocaleDateString()}
-                  </p>
-                  <p className="text-gray-300">
                     <span className="text-white font-medium">Estado:</span>{" "}
-                    {membership.status === "Activa" ? (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
-                        Activo
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
-                        Expirado
-                      </span>
-                    )}
+                    {renderStatus(membership.status)}
                   </p>
                 </div>
               </div>
@@ -143,13 +171,23 @@ export default function MembershipsModal({
                   </svg>
                   Información de Pagos
                 </h3>
-                <div className="mb-4">
+                
+                {/* Deuda Pendiente */}
+                <div className="mb-4 space-y-2">
                   <p className="text-gray-300">
                     <span className="text-white font-medium">
                       Total Pagado:
                     </span>
                     <span className="text-red-400 font-bold text-lg ml-2">
-                      ${membership.totalPaid}
+                      ${membership.totalPaid || 0}
+                    </span>
+                  </p>
+                  <p className="text-gray-300">
+                    <span className="text-white font-medium">
+                      Deuda Pendiente:
+                    </span>
+                    <span className="text-yellow-400 font-bold text-lg ml-2">
+                      ${membership.deuda || 0}
                     </span>
                   </p>
                 </div>
@@ -183,30 +221,6 @@ export default function MembershipsModal({
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Días faltantes */}
-            <div className="bg-zinc-700/30 rounded-xl p-4 border border-zinc-600/30">
-              <h3 className="text-red-400 font-semibold mb-3 flex items-center gap-2">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3h8v4M5 21h14V7H5v14z"
-                  />
-                </svg>
-                Días Restantes
-              </h3>
-              <p className="text-red-400 font-bold text-lg">
-                {daysLeft?.daysLeft}{" "}
-                {daysLeft?.daysLeft === 1 ? "día" : "días"}
-              </p>
             </div>
           </div>
 

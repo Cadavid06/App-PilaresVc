@@ -6,16 +6,24 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
 
   const [formData, setFormData] = useState({
     clientName: "",
+    documentType: "",
     clientDocument: "",
     clientPhone: "",
+    clientEmail: "",
+    birthdate: "",
   });
 
   useEffect(() => {
     if (membership) {
       setFormData({
         clientName: membership.clientName || "",
+        documentType: membership.documentType || "",
         clientDocument: membership.clientDocument || "",
         clientPhone: membership.clientPhone || "",
+        clientEmail: membership.clientEmail || "",
+        birthdate: membership.birthdate
+          ? new Date(membership.birthdate).toISOString().split("T")[0] // para que funcione en el input date
+          : "",
       });
     }
   }, [membership]);
@@ -46,7 +54,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               Actualizar Cliente
             </h2>
             <p className="text-red-400 text-sm">
-              Modifica los datos del cliente
+              Modifica los datos del jugador
             </p>
           </div>
           <button
@@ -76,9 +84,10 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Nombre */}
           <div>
             <label className="block text-sm font-semibold text-red-400 mb-2">
-              Nombre del Cliente
+              Nombre del jugador
             </label>
             <input
               type="text"
@@ -90,6 +99,28 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
             />
           </div>
 
+          {/* Tipo de documento */}
+          <div>
+            <label className="block text-sm font-semibold text-red-400 mb-2">
+              Tipo de documento
+            </label>
+            <select
+              name="documentType"
+              value={formData.documentType}
+              onChange={handleChange}
+              required
+              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+            >
+              <option value="" className="bg-zinc-800 text-gray-400">
+                Selecciona un tipo de documento
+              </option>
+              <option value="689a5bc060ac23972d5e7cf0">TI</option>
+              <option value="689a5c4360ac23972d5e7cf2">CC</option>
+              <option value="689a5c7e60ac23972d5e7cf4">CE</option>
+            </select>
+          </div>
+
+          {/* Documento */}
           <div>
             <label className="block text-sm font-semibold text-red-400 mb-2">
               Documento
@@ -104,6 +135,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
             />
           </div>
 
+          {/* Teléfono */}
           <div>
             <label className="block text-sm font-semibold text-red-400 mb-2">
               Teléfono
@@ -118,6 +150,37 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
             />
           </div>
 
+          {/* Correo */}
+          <div>
+            <label className="block text-sm font-semibold text-red-400 mb-2">
+              Correo
+            </label>
+            <input
+              type="email"
+              name="clientEmail"
+              value={formData.clientEmail}
+              onChange={handleChange}
+              className="w-full bg-zinc-700/50 text-white px-4 py-3 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
+              required
+            />
+          </div>
+
+          {/* Fecha de nacimiento */}
+          <div>
+            <label className="block text-sm font-semibold text-red-400 mb-2">
+              Fecha de nacimiento
+            </label>
+            <input
+              type="date"
+              name="birthdate"
+              value={formData.birthdate}
+              onChange={handleChange}
+              className="w-full bg-zinc-700/50 text-white px-4 py-3 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
+              required
+            />
+          </div>
+
+          {/* Botón */}
           <div className="flex gap-3 mt-8">
             <button
               type="submit"

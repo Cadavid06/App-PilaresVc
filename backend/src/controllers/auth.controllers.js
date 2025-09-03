@@ -2,7 +2,7 @@ import Admin from "../models/admin.models.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { createdAccessToken } from "../libs/jwt.js";
-
+import { TOKEN_SECRET } from "../config.js";
 
 export const register = async (req, res) => {
   const { email, password } = req.body;
@@ -31,7 +31,6 @@ export const register = async (req, res) => {
     res.json({
       id: adminSaved._id,
       email: adminSaved.email,
-      token: token, // Envía el token en el cuerpo de la respuesta
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -59,7 +58,6 @@ export const login = async (req, res) => {
     res.json({
       id: userFound._id,
       email: userFound.email,
-      token: token, // Envía el token en el cuerpo de la respuesta
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

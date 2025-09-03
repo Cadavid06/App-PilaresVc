@@ -1,5 +1,3 @@
-// MembershipPage.jsx
-
 import { useEffect, useState } from "react";
 import MembershipsTable from "../components/MembershipsTable";
 import { useMembership } from "../context/MembershipContext";
@@ -9,19 +7,35 @@ function MembershipPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
 
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   useEffect(() => {
     getMemberships();
   }, []);
 
   const filteredMemberships = membership.filter((m) => {
-    const matchesSearch = m.clientName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = m.clientName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "all" || m.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
+  // Calcular las membresías que se muestran en esta página
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentMemberships = filteredMemberships.slice(
+    indexOfFirst,
+    indexOfLast
+  );
+
+  const totalPages = Math.ceil(filteredMemberships.length / itemsPerPage);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-black to-red-900/20">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="relative z-10 my-15 w-full">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2">
@@ -47,10 +61,10 @@ function MembershipPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full sm:w-1/2 bg-zinc-800/50 backdrop-blur-sm border border-zinc-700/50 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
           />
-          <div className="flex w-full sm:w-1/2 gap-2">
+          <div className="flex flex-wrap w-full sm:w-1/2 gap-2">
             <button
               onClick={() => setFilterStatus("all")}
-              className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filterStatus === "all"
                   ? "bg-red-500 text-white"
                   : "bg-zinc-800/50 border border-zinc-700/50 text-gray-400 hover:bg-zinc-700/50"
@@ -60,7 +74,7 @@ function MembershipPage() {
             </button>
             <button
               onClick={() => setFilterStatus("Activa")}
-              className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filterStatus === "Activa"
                   ? "bg-green-600 text-white"
                   : "bg-zinc-800/50 border border-zinc-700/50 text-gray-400 hover:bg-zinc-700/50"
@@ -69,8 +83,18 @@ function MembershipPage() {
               Activos
             </button>
             <button
+              onClick={() => setFilterStatus("Pendiente")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                filterStatus === "Pendiente"
+                  ? "bg-yellow-600 text-white"
+                  : "bg-zinc-800/50 border border-zinc-700/50 text-gray-400 hover:bg-zinc-700/50"
+              }`}
+            >
+              Pendientes
+            </button>
+            <button
               onClick={() => setFilterStatus("Expirada")}
-              className={`w-full px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filterStatus === "Expirada"
                   ? "bg-red-600 text-white"
                   : "bg-zinc-800/50 border border-zinc-700/50 text-gray-400 hover:bg-zinc-700/50"
@@ -82,13 +106,8 @@ function MembershipPage() {
         </div>
 
         <div className="grid gap-6">
-          {filteredMemberships.length === 0 ? (
+          {currentMemberships.length === 0 ? (
             <div className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700/50 p-8 rounded-xl text-center">
-              <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-              </div>
               <h3 className="text-xl font-semibold text-white mb-2">
                 No hay resultados
               </h3>
@@ -97,7 +116,44 @@ function MembershipPage() {
               </p>
             </div>
           ) : (
-            <MembershipsTable membership={filteredMemberships} />
+            <>
+              <MembershipsTable
+                membership={currentMemberships}
+                currentPage={currentPage}
+                itemsPerPage={itemsPerPage}
+              />
+
+              {/* Paginación */}
+              <div className="flex justify-center mt-6 gap-2">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((prev) => prev - 1)}
+                  className="px-3 py-1 rounded bg-zinc-700 text-gray-300 disabled:opacity-50"
+                >
+                  Anterior
+                </button>
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`px-3 py-1 rounded ${
+                      currentPage === i + 1
+                        ? "bg-red-500 text-white"
+                        : "bg-zinc-700 text-gray-300"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                  className="px-3 py-1 rounded bg-zinc-700 text-gray-300 disabled:opacity-50"
+                >
+                  Siguiente
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>

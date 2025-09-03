@@ -65,41 +65,6 @@ export default function RenewModal({ isOpen, onClose, membership }) {
           )}
 
           <form onSubmit={onSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-red-400 mb-2">
-                Tipo de Membresía
-              </label>
-              <select
-                {...register("memberShipType", {
-                  required: "Debes seleccionar una membresía",
-                  validate: (value) =>
-                    value !== "" || "Selecciona una membresía válida",
-                })}
-                className="w-full bg-zinc-700/50 text-white px-4 py-4 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
-              >
-                <option value="">Selecciona una membresía</option>
-                <option value="689a5bc060ac23972d5e7cf0">Diaria</option>
-                <option value="689a5c4360ac23972d5e7cf2">Semanal</option>
-                <option value="689a5c7e60ac23972d5e7cf4">Quincenal</option>
-                <option value="689a5c9d60ac23972d5e7cf6">Mensual</option>
-              </select>
-              {errors.memberShipType && (
-                <p className="text-red-400 text-sm mt-2 flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {errors.memberShipType.message}
-                </p>
-              )}
-            </div>
 
             <div>
               <label className="block text-sm font-semibold text-red-400 mb-2">

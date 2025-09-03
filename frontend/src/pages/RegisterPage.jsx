@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { useAuth } from "../context/AuthContext";
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import fondo2 from "/images/fondo2.jpg";
+import fondo4 from "/images/fondo4.jpg";
 
 function RegisterPage() {
   const {
@@ -23,10 +23,10 @@ function RegisterPage() {
 
   return (
     <div
-      className="h-screen flex justify-center items-center bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: `url(${fondo2})` }}
+      className="relative h-screen flex justify-center items-center bg-cover bg-center overflow-auto"
+      style={{ backgroundImage: `url(${fondo4})` }}
     >
-      <div className="w-full max-w-md p-8 rounded-2xl shadow-2xl bg-black/50 backdrop-blur-md border border-red-500/20">
+      <div className="w-full max-w-md p-8 rounded-2xl shadow-2xl bg-black/30 backdrop-blur-xs border border-red-500/20 mx-5">
         <h1 className="text-3xl font-bold text-red-400 mb-6 text-center">
           Crear Cuenta
         </h1>
