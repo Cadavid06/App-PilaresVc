@@ -76,13 +76,6 @@ function LoginPage() {
             Ingresar
           </button>
         </form>
-
-        <p className="text-center text-sm text-gray-300 mt-6">
-          ¿No tienes cuenta?{" "}
-          <Link to="/register" className="text-red-400 hover:text-red-300">
-            Regístrate aquí
-          </Link>
-        </p>
       </div>
     </div>
   );

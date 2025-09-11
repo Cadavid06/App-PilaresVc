@@ -31,7 +31,7 @@ export default function PaymentsModals({ isOpen, onClose, membership }) {
                 Agregar Pago
               </h2>
               <p className="text-red-400 text-sm">
-                Cliente: {membership.clientName}
+                Jugador: {membership.clientName}
               </p>
             </div>
             <button

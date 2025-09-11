@@ -1,5 +1,19 @@
 import { useState, useEffect } from "react";
-import { useMembership } from "../context/MembershipContext";
+
+// Simulando el hook de contexto para hacer el componente autocontenido
+const useMembership = () => {
+  const [errors, setErrors] = useState(null);
+
+  const updateMembership = (id, data) => {
+    // Aquí iría la lógica para actualizar la membresía,
+    // por ahora, solo simularemos una actualización y la registraremos en la consola.
+    console.log(`Actualizando membresía con ID: ${id}`);
+    console.log("Datos:", data);
+    setErrors(null); // Limpiar errores en una actualización exitosa
+  };
+
+  return { updateMembership, errors };
+};
 
 export default function UpdateModals({ isOpen, onClose, membership }) {
   const { updateMembership, errors: membershipErrors } = useMembership();
@@ -22,7 +36,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
         clientPhone: membership.clientPhone || "",
         clientEmail: membership.clientEmail || "",
         birthdate: membership.birthdate
-          ? new Date(membership.birthdate).toISOString().split("T")[0] // para que funcione en el input date
+          ? new Date(membership.birthdate).toISOString().split("T")[0]
           : "",
       });
     }
@@ -47,13 +61,13 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/50 p-6 rounded-2xl max-w-md w-full mx-4 shadow-2xl">
-        <div className="flex justify-between items-center mb-6">
+      <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/50 p-4 rounded-2xl max-w-sm w-full mx-4 shadow-2xl">
+        <div className="flex justify-between items-center mb-4">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-1">
+            <h2 className="text-xl font-bold text-white mb-1">
               Actualizar Cliente
             </h2>
-            <p className="text-red-400 text-sm">
+            <p className="text-red-400 text-xs">
               Modifica los datos del jugador
             </p>
           </div>
@@ -62,7 +76,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
             className="text-gray-400 hover:text-white hover:bg-zinc-700/50 rounded-full p-2 transition-all duration-200"
           >
             <svg
-              className="w-6 h-6"
+              className="w-5 h-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -78,15 +92,15 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
         </div>
 
         {membershipErrors && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6">
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-4">
             <p className="text-red-400 text-sm">{membershipErrors.message}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {/* Nombre */}
           <div>
-            <label className="block text-sm font-semibold text-red-400 mb-2">
+            <label className="block text-xs font-semibold text-red-400 mb-1">
               Nombre del jugador
             </label>
             <input
@@ -94,14 +108,14 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               name="clientName"
               value={formData.clientName}
               onChange={handleChange}
-              className="w-full bg-zinc-700/50 text-white px-4 py-3 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
+              className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
               required
             />
           </div>
 
           {/* Tipo de documento */}
           <div>
-            <label className="block text-sm font-semibold text-red-400 mb-2">
+            <label className="block text-xs font-semibold text-red-400 mb-1">
               Tipo de documento
             </label>
             <select
@@ -109,7 +123,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               value={formData.documentType}
               onChange={handleChange}
               required
-              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
             >
               <option value="" className="bg-zinc-800 text-gray-400">
                 Selecciona un tipo de documento
@@ -122,7 +136,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
 
           {/* Documento */}
           <div>
-            <label className="block text-sm font-semibold text-red-400 mb-2">
+            <label className="block text-xs font-semibold text-red-400 mb-1">
               Documento
             </label>
             <input
@@ -130,14 +144,14 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               name="clientDocument"
               value={formData.clientDocument}
               onChange={handleChange}
-              className="w-full bg-zinc-700/50 text-white px-4 py-3 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
+              className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
               required
             />
           </div>
 
           {/* Teléfono */}
           <div>
-            <label className="block text-sm font-semibold text-red-400 mb-2">
+            <label className="block text-xs font-semibold text-red-400 mb-1">
               Teléfono
             </label>
             <input
@@ -145,14 +159,14 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               name="clientPhone"
               value={formData.clientPhone}
               onChange={handleChange}
-              className="w-full bg-zinc-700/50 text-white px-4 py-3 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
+              className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
               required
             />
           </div>
 
           {/* Correo */}
           <div>
-            <label className="block text-sm font-semibold text-red-400 mb-2">
+            <label className="block text-xs font-semibold text-red-400 mb-1">
               Correo
             </label>
             <input
@@ -160,14 +174,14 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               name="clientEmail"
               value={formData.clientEmail}
               onChange={handleChange}
-              className="w-full bg-zinc-700/50 text-white px-4 py-3 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
+              className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
               required
             />
           </div>
 
           {/* Fecha de nacimiento */}
           <div>
-            <label className="block text-sm font-semibold text-red-400 mb-2">
+            <label className="block text-xs font-semibold text-red-400 mb-1">
               Fecha de nacimiento
             </label>
             <input
@@ -175,16 +189,16 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               name="birthdate"
               value={formData.birthdate}
               onChange={handleChange}
-              className="w-full bg-zinc-700/50 text-white px-4 py-3 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
+              className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
               required
             />
           </div>
 
           {/* Botón */}
-          <div className="flex gap-3 mt-8">
+          <div className="flex gap-3 mt-4">
             <button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 px-6 py-3 rounded-xl text-white font-semibold transition-all duration-200 shadow-lg shadow-red-500/25"
+              className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 px-4 py-2 rounded-xl text-white font-semibold transition-all duration-200 shadow-lg shadow-red-500/25"
             >
               Actualizar
             </button>

@@ -31,7 +31,7 @@ export default function RenewModal({ isOpen, onClose, membership }) {
                 Renovar Membresía
               </h2>
               <p className="text-red-400 text-sm">
-                Cliente: {membership.clientName}
+                Jugador: {membership.clientName}
               </p>
             </div>
             <button

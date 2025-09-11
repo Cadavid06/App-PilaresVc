@@ -14,8 +14,8 @@ function RegisterPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) navigate("/memberships");
-  }, [isAuthenticated, navigate]);
+    if (isAuthenticated);
+  }, [isAuthenticated]);
 
   const onSubmit = handleSubmit(async (data) => {
     signUp(data);
@@ -50,7 +50,9 @@ function RegisterPage() {
               {...register("email", { required: "El email es obligatorio" })}
             />
             {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -59,7 +61,9 @@ function RegisterPage() {
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
               type="password"
               placeholder="Contraseña"
-              {...register("password", { required: "La contraseña es obligatoria" })}
+              {...register("password", {
+                required: "La contraseña es obligatoria",
+              })}
             />
             {errors.password && (
               <p className="text-red-500 text-sm mt-1">
@@ -77,9 +81,8 @@ function RegisterPage() {
         </form>
 
         <p className="text-center text-sm text-gray-300 mt-6">
-          ¿Ya tienes una cuenta?{" "}
-          <Link to="/" className="text-red-400 hover:text-red-300">
-            Inicia sesión
+          <Link to="/memberships" className="text-red-400 hover:text-red-300">
+            Regresar
           </Link>
         </p>
       </div>

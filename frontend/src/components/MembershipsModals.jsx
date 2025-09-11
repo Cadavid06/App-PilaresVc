@@ -47,7 +47,7 @@ export default function MembershipsModal({
                 Detalles de la Membresía
               </h2>
               <p className="text-red-400 text-sm">
-                Información completa del cliente
+                Información completa del jugador
               </p>
             </div>
             <button

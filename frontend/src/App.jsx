@@ -16,9 +16,10 @@ function App() {
           <Navbar />
           <Routes>
             <Route path="/" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            
 
             <Route element={<ProtectedRoutes />}>
+              <Route path="/register" element={<RegisterPage />} />
               <Route path="/memberships" element={<MemberShipsPage />} />
               <Route path="/add-memberships" element={<MembershipFormPage />} />
               <Route path="/membership/:id" element={<MembershipFormPage />} />
