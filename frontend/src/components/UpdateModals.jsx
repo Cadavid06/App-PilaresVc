@@ -1,17 +1,5 @@
 import { useState, useEffect } from "react";
-
-// Simulando el hook de contexto para hacer el componente autocontenido
-const useMembership = () => {
-  const [errors, setErrors] = useState(null);
-
-  const updateMembership = (id, data) => {
-    console.log(`Actualizando membresía con ID: ${id}`);
-    console.log("Datos:", data);
-    setErrors(null);
-  };
-
-  return { updateMembership, errors };
-};
+import { useMembership } from "../context/MembershipContext"; // <-- el hook real
 
 export default function UpdateModals({ isOpen, onClose, membership }) {
   const { updateMembership, errors: membershipErrors } = useMembership();
@@ -62,12 +50,8 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
       <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/50 p-4 rounded-2xl max-w-sm w-full mx-4 shadow-2xl">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h2 className="text-xl font-bold text-white mb-1">
-              Actualizar Jugador
-            </h2>
-            <p className="text-red-400 text-xs">
-              Modifica los datos del jugador
-            </p>
+            <h2 className="text-xl font-bold text-white mb-1">Actualizar Jugador</h2>
+            <p className="text-red-400 text-xs">Modifica los datos del jugador</p>
           </div>
           <button
             onClick={onClose}
@@ -121,7 +105,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               value={formData.documentType}
               onChange={handleChange}
               required
-              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
             >
               <option value="" className="bg-zinc-800 text-gray-400">
                 Selecciona un tipo de documento
