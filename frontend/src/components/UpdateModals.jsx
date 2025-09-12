@@ -5,11 +5,9 @@ const useMembership = () => {
   const [errors, setErrors] = useState(null);
 
   const updateMembership = (id, data) => {
-    // Aquí iría la lógica para actualizar la membresía,
-    // por ahora, solo simularemos una actualización y la registraremos en la consola.
     console.log(`Actualizando membresía con ID: ${id}`);
     console.log("Datos:", data);
-    setErrors(null); // Limpiar errores en una actualización exitosa
+    setErrors(null);
   };
 
   return { updateMembership, errors };
@@ -65,7 +63,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
         <div className="flex justify-between items-center mb-4">
           <div>
             <h2 className="text-xl font-bold text-white mb-1">
-              Actualizar Cliente
+              Actualizar Jugador
             </h2>
             <p className="text-red-400 text-xs">
               Modifica los datos del jugador
