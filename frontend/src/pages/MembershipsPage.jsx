@@ -56,7 +56,7 @@ function MembershipPage() {
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <input
             type="text"
-            placeholder="Buscar por nombre de cliente..."
+            placeholder="Buscar por nombre de jugador..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full sm:w-1/2 bg-zinc-800/50 backdrop-blur-sm border border-zinc-700/50 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"

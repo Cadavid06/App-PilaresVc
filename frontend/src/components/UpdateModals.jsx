@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { useMembership } from "../context/MembershipContext"; // <-- el hook real
+import { useMembership } from "../context/MembershipContext";
+
+// Objeto de mapeo de IDs a tipos de documento
+const documentTypeMap = {
+  "689a5bc060ac23972d5e7cf0": "TI",
+  "689a5c4360ac23972d5e7cf2": "CC",
+  "689a5c7e60ac23972d5e7cf4": "CE",
+};
 
 export default function UpdateModals({ isOpen, onClose, membership }) {
   const { updateMembership, errors: membershipErrors } = useMembership();
@@ -15,9 +22,12 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
 
   useEffect(() => {
     if (membership) {
+      // Usamos el objeto de mapeo para obtener el valor del tipo de documento
+      const docTypeToDisplay = documentTypeMap[membership.documentType] || membership.documentType;
+
       setFormData({
         clientName: membership.clientName || "",
-        documentType: membership.documentType || "",
+        documentType: docTypeToDisplay || "", // <-- Usamos el valor mapeado aquí
         clientDocument: membership.clientDocument || "",
         clientPhone: membership.clientPhone || "",
         clientEmail: membership.clientEmail || "",
@@ -110,6 +120,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               <option value="" className="bg-zinc-800 text-gray-400">
                 Selecciona un tipo de documento
               </option>
+              {/* Aquí las opciones mantienen los IDs como valores */}
               <option value="689a5bc060ac23972d5e7cf0">TI</option>
               <option value="689a5c4360ac23972d5e7cf2">CC</option>
               <option value="689a5c7e60ac23972d5e7cf4">CE</option>

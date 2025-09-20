@@ -27,7 +27,7 @@ function MembershipFormPage() {
             Registrar Membresía
           </h1>
           <p className="text-red-400 text-sm">
-            Completa la información del cliente
+            Completa la información del jugador
           </p>
         </div>
 
