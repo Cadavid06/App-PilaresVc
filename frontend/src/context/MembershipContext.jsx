@@ -67,16 +67,6 @@ export const MembershipProvider = ({ children }) => {
     }
   };
 
-  const getDaysLeft = async (id) => {
-    try {
-      const res = await getDaysLeftRequest(id);
-      return res.data;
-    } catch (error) {
-      console.error("Error get membership:", error);
-      setErrors(error.response?.data || ["Unexpected error"]);
-    }
-  };
-
   const updateMembership = async (id, data) => {
     try {
       const res = await updateMembershipRequest(id, data);
