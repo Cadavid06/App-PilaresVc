@@ -7,7 +7,6 @@ import {
   addPaymentsRequest,
   renewMembershipRequest,
   delateMembershipRequest,
-  getDaysLeftRequest,
 } from "../api/memberships";
 
 const MembershipContext = createContext();
@@ -136,7 +135,6 @@ export const MembershipProvider = ({ children }) => {
         addPayments,
         renewMembership,
         deleteMembership,
-        getDaysLeft,
         membership,
         errors,
       }}

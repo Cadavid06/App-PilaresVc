@@ -19,10 +19,9 @@ export default function MembershipsTable({
   currentPage,
   itemsPerPage,
 }) {
-  const { getMembershipById, getDaysLeft, deleteMembership } = useMembership();
+  const { getMembershipById, deleteMembership } = useMembership();
   const [expandedRow, setExpandedRow] = useState(null);
   const [selectedMembership, setSelectedMembership] = useState(null);
-  const [daysLeft, setdaysLeft] = useState(null);
   const [isModalOpenMembership, setIsModalOpenMembership] = useState(false);
   const [update, setUpdate] = useState(null);
   const [isModalOpenUpdate, setIsModalOpenUpdate] = useState(false);
@@ -40,8 +39,6 @@ export default function MembershipsTable({
   const getMembership = async (id) => {
     const data = await getMembershipById(id);
     setSelectedMembership(data);
-    const daysLeft = await getDaysLeft(id);
-    setdaysLeft(daysLeft);
     setIsModalOpenMembership(true);
   };
 

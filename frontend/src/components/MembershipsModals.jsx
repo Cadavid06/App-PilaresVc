@@ -3,7 +3,7 @@ export default function MembershipsModal({
   onClose,
   membership,
 }) {
-  // Ya no necesitas daysLeft aquí, se puede calcular si es necesario
+  
   if (!isOpen || !membership) return null;
 
   // Función para pintar estado con estilos
