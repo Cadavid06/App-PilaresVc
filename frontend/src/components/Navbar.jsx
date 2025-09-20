@@ -32,10 +32,19 @@ export default function Navbar() {
         <ul className="hidden sm:flex items-center gap-6">
           <li>
             <Link
+              to="/memberships"
+              className="text-red-300 hover:text-white transition-all duration-200 text-lg font-semibold"
+            >
+              Jugadores
+            </Link>
+          </li>
+          <li>
+            <Link
               to="/add-memberships"
               className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2 rounded-lg transition-all duration-200 shadow-md"
             >
-              Añadir jugadores
+              <Plus size={18} />
+              Añadir jugador
             </Link>
           </li>
           <li>
@@ -43,7 +52,7 @@ export default function Navbar() {
               to="/register"
               className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2 rounded-lg transition-all duration-200 shadow-md"
             >
-              <Plus size={18} />
+              <UserPlus size={18} />
               Añadir admin
             </Link>
           </li>
@@ -64,12 +73,21 @@ export default function Navbar() {
         <ul className="flex flex-col gap-3 px-6 pb-4 sm:hidden">
           <li>
             <Link
+              to="/memberships"
+              onClick={() => setIsOpen(false)}
+              className="inline-flex items-center justify-center gap-2 w-full text-white font-semibold px-5 py-3 rounded-lg transition-all duration-200 bg-red-600 hover:bg-red-700 shadow-lg"
+            >
+              Jugadores
+            </Link>
+          </li>
+          <li>
+            <Link
               to="/add-memberships"
               onClick={() => setIsOpen(false)}
               className="inline-flex items-center justify-center gap-2 w-full text-white font-semibold px-5 py-3 rounded-lg transition-all duration-200 bg-red-600 hover:bg-red-700 shadow-lg"
             >
-              <UserPlus size={20} />
-              Añadir jugadores
+              <Plus size={20} />
+              Añadir jugador
             </Link>
           </li>
           <li>
@@ -82,7 +100,6 @@ export default function Navbar() {
               Añadir admin
             </Link>
           </li>
-
           <li>
             <Link
               onClick={() => {
