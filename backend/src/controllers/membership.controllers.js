@@ -87,26 +87,6 @@ export const getMembershipById = async (req, res) => {
   }
 };
 
-export const getDaysLeft = async (req, res) => {
-  const memberShipFound = await MemberShip.findById(req.params.id);
-  if (!memberShipFound)
-    return res.status(404).json({ message: "Membresía no encontrada" });
-
-  const today = new Date();
-  const endDate = memberShipFound.endDate;
-  const daysLeft = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-
-  if (today > endDate) {
-    memberShipFound.status = "Expirada";
-  }
-
-  await memberShipFound.save();
-
-  res.json({
-    daysLeft,
-  });
-};
-
 export const updateUserData = async (req, res) => {
   const { id } = req.params;
   const {
@@ -237,6 +217,15 @@ export const addPayments = async (req, res) => {
     const currentYear = now.getFullYear();
 
     const deudaAtrasada = calcularDeuda(member, now, MONTHLY_FEE);
+
+    // ➡️ NUEVA VALIDACIÓN: Si el jugador está expirado y no tiene deuda pendiente,
+    // se debe usar el botón de renovar, no de pagos.
+    if (member.status === "Expirada" && deudaAtrasada <= 0) {
+      return res.status(400).json({
+        message:
+          "El jugador debe renovar su membresía, no se pueden agregar pagos.",
+      });
+    }
 
     if (deudaAtrasada > 0) {
       // Player has an outstanding debt. The payment must not be greater than the debt.

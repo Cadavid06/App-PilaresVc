@@ -194,7 +194,6 @@ export default function MembershipsTable({
         isOpen={isModalOpenMembership}
         onClose={() => setIsModalOpenMembership(false)}
         membership={selectedMembership}
-        daysLeft={daysLeft}
       />
       {/* Modal para actualizar */}
       <UpdateModals
