@@ -93,7 +93,7 @@ export default function MembershipsTable({
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="font-semibold text-white">
+                        <span className="font-semibold text-white text-sm md:text-base truncate">
                           {m.clientName}
                         </span>
                       </div>
