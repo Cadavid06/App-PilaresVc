@@ -33,7 +33,7 @@ export default function Navbar() {
           <li>
             <Link
               to="/add-memberships"
-              className="text-red-300 hover:text-white transition-all duration-200 text-lg font-semibold"
+              className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2 rounded-lg transition-all duration-200 shadow-md"
             >
               Añadir jugadores
             </Link>
