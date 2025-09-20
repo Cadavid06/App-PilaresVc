@@ -19,6 +19,7 @@ function RegisterPage() {
 
   const onSubmit = handleSubmit(async (data) => {
     signUp(data);
+    navigate('/memberships')
   });
 
   return (
