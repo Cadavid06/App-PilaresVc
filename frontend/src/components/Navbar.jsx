@@ -43,7 +43,7 @@ export default function Navbar() {
               to="/add-memberships"
               className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2 rounded-lg transition-all duration-200 shadow-md"
             >
-              <Plus size={18} />
+              <Plus size={20} />
               Añadir jugador
             </Link>
           </li>
