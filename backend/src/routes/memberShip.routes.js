@@ -17,7 +17,6 @@ router.post("/memberShip", authRequired, createMembership);
 
 router.get("/memberShip", authRequired, getMemberships);
 router.get("/memberShip/:id", authRequired, getMembershipById);
-router.get("/memberShip/:id/expired", authRequired, getDaysLeft);
 
 router.put("/memberShip/:id", authRequired, updateUserData);
 router.put("/memberShip/:id/payments", authRequired, addPayments);
