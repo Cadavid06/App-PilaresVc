@@ -65,15 +65,6 @@ export default function Navbar() {
         <ul className="flex flex-col gap-3 px-6 pb-4 sm:hidden">
           <li>
             <Link
-              to="/memberships"
-              onClick={() => setIsOpen(false)}
-              className="inline-flex items-center justify-center gap-2 w-full text-white font-semibold px-5 py-3 rounded-lg transition-all duration-200 bg-red-600 hover:bg-red-700 shadow-lg"
-            >
-              Jugadores
-            </Link>
-          </li>
-          <li>
-            <Link
               to="/add-memberships"
               onClick={() => setIsOpen(false)}
               className="inline-flex items-center justify-center gap-2 w-full text-white font-semibold px-5 py-3 rounded-lg transition-all duration-200 bg-red-600 hover:bg-red-700 shadow-lg"
