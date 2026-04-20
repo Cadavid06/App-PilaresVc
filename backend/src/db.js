@@ -6,11 +6,11 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: "postgres",
   logging: false, // Cambia a console.log si quieres ver las queries SQL
   dialectOptions: {
-    // Descomenta estas líneas si tu PostgreSQL usa SSL (ej. Render, Supabase, Neon)
-    // ssl: {
-    //   require: true,
-    //   rejectUnauthorized: false,
-    // },
+
+    ssl: {
+       require: true,
+       rejectUnauthorized: false,
+     },
   },
 });
 
