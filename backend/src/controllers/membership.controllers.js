@@ -1,6 +1,16 @@
+import { MemberShip, Payment } from "../models/memberShip.models.js";
 import calcularDeuda from "../libs/calculateDebt.js";
-import MemberShip from "../models/memberShip.models.js";
 
+const MONTHLY_FEE = 20000;
+
+// ─── Helper: convierte una instancia Sequelize a objeto plano ─────────────
+// Equivalente a .toObject() de Mongoose
+const toPlain = (member) => {
+  const plain = member.get({ plain: true });
+  return plain;
+};
+
+// ─── Crear membresía ──────────────────────────────────────────────────────
 export const createMembership = async (req, res) => {
   try {
     const {
@@ -13,15 +23,11 @@ export const createMembership = async (req, res) => {
       amount,
     } = req.body;
 
-    const MONTHLY_FEE = 20000;
     const now = new Date();
-
-    const parsedAmount = Number(amount); // 🔹 Asegurar que es número
+    const parsedAmount = Number(amount);
 
     if (parsedAmount <= 0) {
-      return res
-        .status(400)
-        .json({ message: "Debe realizar al menos un abono" });
+      return res.status(400).json({ message: "Debe realizar al menos un abono" });
     }
     if (parsedAmount > MONTHLY_FEE) {
       return res.status(400).json({
@@ -29,10 +35,10 @@ export const createMembership = async (req, res) => {
       });
     }
 
-    let status = "Pendiente";
-    if (parsedAmount === MONTHLY_FEE) status = "Activa";
+    const status = parsedAmount === MONTHLY_FEE ? "Activa" : "Pendiente";
 
-    const newMemberShip = new MemberShip({
+    // Crear la membresía en la tabla memberships
+    const newMemberShip = await MemberShip.create({
       clientName,
       documentType,
       clientDocument,
@@ -40,53 +46,73 @@ export const createMembership = async (req, res) => {
       clientEmail,
       birthdate,
       status,
-      payments: [
-        {
-          amount: parsedAmount,
-          date: now,
-          month: now.getMonth() + 1,
-          year: now.getFullYear(),
-        },
-      ],
       totalPaid: parsedAmount,
-      admin: req.admin.id,
+      adminId: req.admin.id,
     });
 
-    const saved = await newMemberShip.save();
-    res.json(saved);
+    // Crear el primer pago en la tabla payments
+    await Payment.create({
+      amount: parsedAmount,
+      date: now,
+      month: now.getMonth() + 1,
+      year: now.getFullYear(),
+      memberShipId: newMemberShip.id,
+    });
+
+    // Devolver la membresía con sus pagos incluidos
+    const saved = await MemberShip.findByPk(newMemberShip.id, {
+      include: [{ model: Payment, as: "payments" }],
+    });
+
+    res.json(toPlain(saved));
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error al registrar jugador" });
   }
 };
 
+// ─── Obtener todas las membresías ─────────────────────────────────────────
 export const getMemberships = async (req, res) => {
-  const memberShipsFound = await MemberShip.find().sort({ clientName: 1 });
-  if (!memberShipsFound)
-    return res.status(404).json({ message: "Membresía no encontrada" });
-  res.json(memberShipsFound);
+  try {
+    const memberships = await MemberShip.findAll({
+      include: [{ model: Payment, as: "payments" }],
+      order: [["clientName", "ASC"]],
+    });
+
+    if (!memberships) {
+      return res.status(404).json({ message: "Membresías no encontradas" });
+    }
+
+    res.json(memberships.map(toPlain));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al obtener membresías" });
+  }
 };
 
+// ─── Obtener membresía por ID ─────────────────────────────────────────────
 export const getMembershipById = async (req, res) => {
   try {
-    const member = await MemberShip.findById(req.params.id);
+    // findByPk() reemplaza a findById()
+    const member = await MemberShip.findByPk(req.params.id, {
+      include: [{ model: Payment, as: "payments" }],
+    });
+
     if (!member) {
       return res.status(404).json({ message: "Membresía no encontrada" });
     }
 
-    // Calcula la deuda usando la función corregida
-    const deuda = calcularDeuda(member);
+    const plain = toPlain(member);
+    const deuda = calcularDeuda(plain);
 
-    return res.json({
-      ...member.toObject(),
-      deuda,
-    });
+    return res.json({ ...plain, deuda });
   } catch (error) {
     console.error("Error al obtener la membresía:", error);
     return res.status(500).json({ message: "Error del servidor" });
   }
 };
 
+// ─── Actualizar datos del jugador ─────────────────────────────────────────
 export const updateUserData = async (req, res) => {
   const { id } = req.params;
   const {
@@ -98,51 +124,43 @@ export const updateUserData = async (req, res) => {
     birthdate,
   } = req.body;
 
-  if (
-    !clientName &&
-    !documentType &&
-    !clientDocument &&
-    !clientPhone &&
-    !clientEmail &&
-    !birthdate
-  ) {
-    return res.status(400).json({
-      message: "No se enviaron datos válidos para actualizar.",
-    });
+  if (!clientName && !documentType && !clientDocument && !clientPhone && !clientEmail && !birthdate) {
+    return res.status(400).json({ message: "No se enviaron datos válidos para actualizar." });
   }
 
   try {
-    const updatedUser = await MemberShip.findByIdAndUpdate(
-      id,
-      {
-        ...(clientName && { clientName }),
-        ...(documentType && { documentType }),
-        ...(clientDocument && { clientDocument }),
-        ...(clientPhone && { clientPhone }),
-        ...(clientEmail && { clientEmail }),
-        ...(birthdate && { birthdate }),
-      },
-      { new: true }
-    );
-
-    if (!updatedUser) {
+    const member = await MemberShip.findByPk(id);
+    if (!member) {
       return res.status(404).json({ message: "Jugador no encontrado" });
     }
 
+    // Sequelize: update() con objeto de campos a cambiar
+    await member.update({
+      ...(clientName && { clientName }),
+      ...(documentType && { documentType }),
+      ...(clientDocument && { clientDocument }),
+      ...(clientPhone && { clientPhone }),
+      ...(clientEmail && { clientEmail }),
+      ...(birthdate && { birthdate }),
+    });
+
+    // Recargar con pagos para devolver objeto completo
+    await member.reload({ include: [{ model: Payment, as: "payments" }] });
+
     res.json({
       message: "Datos del jugador actualizados correctamente",
-      user: updatedUser,
+      user: toPlain(member),
     });
   } catch (error) {
     res.status(500).json({ message: "Error al actualizar el jugador", error });
   }
 };
 
+// ─── Renovar membresía ────────────────────────────────────────────────────
 export const renewMembership = async (req, res) => {
   try {
     const { id } = req.params;
     let { amount } = req.body;
-    const MONTHLY_FEE = 20000;
 
     amount = Number(amount);
     if (!Number.isFinite(amount) || amount <= 0 || amount > MONTHLY_FEE) {
@@ -151,7 +169,10 @@ export const renewMembership = async (req, res) => {
       });
     }
 
-    const member = await MemberShip.findById(id);
+    const member = await MemberShip.findByPk(id, {
+      include: [{ model: Payment, as: "payments" }],
+    });
+
     if (!member) {
       return res.status(404).json({ message: "Jugador no encontrado" });
     }
@@ -163,7 +184,7 @@ export const renewMembership = async (req, res) => {
     }
 
     const now = new Date();
-    const deuda = calcularDeuda(member, now, MONTHLY_FEE);
+    const deuda = calcularDeuda(toPlain(member), now, MONTHLY_FEE);
 
     if (deuda > 0) {
       return res.status(400).json({
@@ -171,43 +192,49 @@ export const renewMembership = async (req, res) => {
       });
     }
 
-    // Borrón y cuenta nueva, si no tiene deuda atrasada.
-    // This is the "start of a new cycle" functionality.
-    member.payments = [];
-    member.totalPaid = 0;
+    // Borrar todos los pagos anteriores (borrón y cuenta nueva)
+    await Payment.destroy({ where: { memberShipId: id } });
 
-    member.payments.push({
+    // Crear el nuevo pago
+    await Payment.create({
       amount,
       date: now,
       month: now.getMonth() + 1,
       year: now.getFullYear(),
+      memberShipId: id,
     });
 
-    member.totalPaid = amount;
-    member.status = amount === MONTHLY_FEE ? "Activa" : "Pendiente";
+    const newStatus = amount === MONTHLY_FEE ? "Activa" : "Pendiente";
 
-    await member.save();
-    return res.json({
-      ...member.toObject(),
-      deuda,
+    await member.update({
+      totalPaid: amount,
+      status: newStatus,
     });
+
+    await member.reload({ include: [{ model: Payment, as: "payments" }] });
+
+    const plain = toPlain(member);
+    return res.json({ ...plain, deuda: 0 });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Error al renovar la mensualidad" });
   }
 };
 
+// ─── Agregar pago ─────────────────────────────────────────────────────────
 export const addPayments = async (req, res) => {
   try {
     let { amount } = req.body;
-    const MONTHLY_FEE = 20000;
 
     amount = Number(amount);
     if (!Number.isFinite(amount) || amount <= 0) {
       return res.status(400).json({ message: "Monto inválido" });
     }
 
-    const member = await MemberShip.findById(req.params.id);
+    const member = await MemberShip.findByPk(req.params.id, {
+      include: [{ model: Payment, as: "payments" }],
+    });
+
     if (!member) {
       return res.status(404).json({ message: "Jugador no encontrado" });
     }
@@ -216,27 +243,23 @@ export const addPayments = async (req, res) => {
     const currentMonth = now.getMonth() + 1;
     const currentYear = now.getFullYear();
 
-    const deudaAtrasada = calcularDeuda(member, now, MONTHLY_FEE);
+    const plain = toPlain(member);
+    const deudaAtrasada = calcularDeuda(plain, now, MONTHLY_FEE);
 
-    // ➡️ NUEVA VALIDACIÓN: Si el jugador está expirado y no tiene deuda pendiente,
-    // se debe usar el botón de renovar, no de pagos.
     if (member.status === "Expirada" && deudaAtrasada <= 0) {
       return res.status(400).json({
-        message:
-          "El jugador debe renovar su membresía, no se pueden agregar pagos.",
+        message: "El jugador debe renovar su membresía, no se pueden agregar pagos.",
       });
     }
 
     if (deudaAtrasada > 0) {
-      // Player has an outstanding debt. The payment must not be greater than the debt.
       if (amount > deudaAtrasada) {
         return res.status(400).json({
           message: `El pago no puede ser mayor a la deuda total ($${deudaAtrasada}).`,
         });
       }
     } else {
-      // Player is caught up on past debts. This payment is for the current month.
-      const totalPaidThisMonth = member.payments
+      const totalPaidThisMonth = plain.payments
         .filter((p) => p.month === currentMonth && p.year === currentYear)
         .reduce((sum, p) => sum + p.amount, 0);
 
@@ -255,47 +278,66 @@ export const addPayments = async (req, res) => {
       }
     }
 
-    // Register the payment
-    member.payments.push({
+    // Registrar el pago
+    await Payment.create({
       amount,
       date: now,
       month: currentMonth,
       year: currentYear,
+      memberShipId: member.id,
     });
 
-    member.totalPaid = (member.totalPaid || 0) + amount;
+    const newTotalPaid = (member.totalPaid || 0) + amount;
 
-    // The key change: Update status only if the player was already 'Pendiente'
-    // and this payment makes them 'Activa'.
+    // Recargar pagos para recalcular estado
+    await member.reload({ include: [{ model: Payment, as: "payments" }] });
+    const updatedPlain = toPlain(member);
+
+    let newStatus = member.status;
     if (member.status === "Pendiente") {
-      const newDebt = calcularDeuda(member, now, MONTHLY_FEE);
-
+      const newDebt = calcularDeuda(updatedPlain, now, MONTHLY_FEE);
       if (newDebt <= 0) {
-        const totalPaidThisMonth = member.payments
+        const totalPaidThisMonth = updatedPlain.payments
           .filter((p) => p.month === currentMonth && p.year === currentYear)
           .reduce((sum, p) => sum + p.amount, 0);
-
         if (totalPaidThisMonth >= MONTHLY_FEE) {
-          member.status = "Activa";
+          newStatus = "Activa";
         }
       }
     }
 
-    await member.save();
-    const deuda = calcularDeuda(member, now, MONTHLY_FEE);
-    return res.json({
-      ...member.toObject(),
-      deuda,
-    });
+    await member.update({ totalPaid: newTotalPaid, status: newStatus });
+    await member.reload({ include: [{ model: Payment, as: "payments" }] });
+
+    const finalPlain = toPlain(member);
+    const deuda = calcularDeuda(finalPlain, now, MONTHLY_FEE);
+
+    return res.json({ ...finalPlain, deuda });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Error agregando pago" });
   }
 };
 
+// ─── Eliminar membresía ───────────────────────────────────────────────────
 export const deleteMembership = async (req, res) => {
-  const memberShipFound = await MemberShip.findByIdAndDelete(req.params.id);
-  if (!memberShipFound)
-    return res.status(404).json({ message: "Membresía no encontrada" });
-  res.json(memberShipFound);
+  try {
+    const member = await MemberShip.findByPk(req.params.id, {
+      include: [{ model: Payment, as: "payments" }],
+    });
+
+    if (!member) {
+      return res.status(404).json({ message: "Membresía no encontrada" });
+    }
+
+    const plain = toPlain(member);
+
+    // Los pagos se eliminan en cascada gracias a onDelete: 'CASCADE' en el modelo
+    await member.destroy();
+
+    res.json(plain);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al eliminar membresía" });
+  }
 };
