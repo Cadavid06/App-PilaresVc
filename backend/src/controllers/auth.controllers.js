@@ -2,34 +2,24 @@ import Admin from "../models/admin.models.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { createdAccessToken } from "../libs/jwt.js";
+import { TOKEN_SECRET } from "../config.js";
+
+// ✅ FIX #11: verifyToken ahora usa TOKEN_SECRET desde config.js,
+// igual que jwt.js y validateToken.js. Fuente única garantizada.
 
 export const register = async (req, res) => {
   const { email, password } = req.body;
-
   try {
-    // Sequelize usa findOne con where: {}  en lugar de findOne({email})
     const adminFound = await Admin.findOne({ where: { email } });
     if (adminFound)
       return res.status(400).json(["The email is already in use"]);
 
     const passwordHash = await bcrypt.hash(password, 10);
-
-    // Admin.create() reemplaza a new Admin().save()
     const adminSaved = await Admin.create({ email, password: passwordHash });
-
     const token = await createdAccessToken({ id: adminSaved.id });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-    });
-
-    res.json({
-      id: adminSaved.id,
-      email: adminSaved.email,
-      token,
-    });
+    res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "none" });
+    res.json({ id: adminSaved.id, email: adminSaved.email, token });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -37,7 +27,6 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
-
   try {
     const userFound = await Admin.findOne({ where: { email } });
     if (!userFound) return res.status(400).json(["User not found"]);
@@ -46,29 +35,15 @@ export const login = async (req, res) => {
     if (!isMatch) return res.status(400).json(["Incorrect Password"]);
 
     const token = await createdAccessToken({ id: userFound.id });
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-    });
-
-    res.json({
-      id: userFound.id,
-      email: userFound.email,
-      token,
-    });
+    res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "none" });
+    res.json({ id: userFound.id, email: userFound.email, token });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 export const logout = (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  });
+  res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "none" });
   return res.json({ message: "Logged out" });
 };
 
@@ -81,16 +56,11 @@ export const verifyToken = async (req, res) => {
 
   if (!token) return res.status(401).json({ message: "Unauthorized" });
 
-  jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
+  // ✅ FIX #11: era process.env.JWT_SECRET — ahora TOKEN_SECRET desde config.js
+  jwt.verify(token, TOKEN_SECRET, async (err, user) => {
     if (err) return res.status(401).json({ message: "Unauthorized" });
-
-    // Sequelize: findByPk() reemplaza a findById()
     const userFound = await Admin.findByPk(user.id);
     if (!userFound) return res.status(401).json({ message: "Unauthorized" });
-
-    return res.json({
-      id: userFound.id,
-      email: userFound.email,
-    });
+    return res.json({ id: userFound.id, email: userFound.email });
   });
 };

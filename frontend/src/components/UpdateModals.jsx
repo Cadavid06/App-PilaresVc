@@ -37,8 +37,9 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (membership?._id) {
-      await updateMembership(membership._id, formData);
+    const actualId = membership?.id || membership?._id;
+    if (actualId) {
+      await updateMembership(actualId, formData);
       onClose();
     }
   };

@@ -7,12 +7,13 @@ import {
   CreditCard,
   RefreshCw,
   Trash2,
+  Calendar,
 } from "lucide-react";
 import MembershipsModal from "./MembershipsModals";
 import UpdateModals from "./UpdateModals";
 import PaymentsModals from "./PaymentsModals";
-import RenewModal from "./RenewModal";
 import ConfirmModal from "./DeleteMembershipModal";
+import AttendanceModal from "./AttendanceModal";
 
 export default function MembershipsTable({
   membership,
@@ -27,10 +28,10 @@ export default function MembershipsTable({
   const [isModalOpenUpdate, setIsModalOpenUpdate] = useState(false);
   const [payments, setPayments] = useState();
   const [isModalOpenPayments, setisModalOpenPayments] = useState();
-  const [renew, setrenew] = useState();
-  const [isModalOpenRenew, setisModalOpenRenew] = useState();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [membershipToDelete, setMembershipToDelete] = useState(null);
+  const [attendance, setAttendance] = useState(null);
+  const [isModalOpenAttendance, setIsModalOpenAttendance] = useState(false);
 
   const toggleRow = (id) => {
     setExpandedRow(expandedRow === id ? null : id);
@@ -52,9 +53,13 @@ export default function MembershipsTable({
     setisModalOpenPayments(true);
   };
 
-  const renewMembership = async (membership) => {
-    setrenew(membership);
-    setisModalOpenRenew(true);
+  const markAttendance = async (membership) => {
+    if (membership.status === "Activa") {
+      alert("No se puede ajustar deuda a un jugador que está al día (Activo).");
+      return;
+    }
+    setAttendance(membership);
+    setIsModalOpenAttendance(true);
   };
 
   const confirmDelete = (id) => {
@@ -89,6 +94,9 @@ export default function MembershipsTable({
                 <th className="px-6 py-4 text-red-400 font-semibold text-sm uppercase tracking-wider">
                   Jugador
                 </th>
+                <th className="px-6 py-4 text-red-400 font-semibold text-sm uppercase tracking-wider text-right">
+                  Deuda
+                </th>
                 <th className="px-6 py-4 text-red-400 font-semibold text-sm uppercase tracking-wider">
                   Estado
                 </th>
@@ -97,10 +105,11 @@ export default function MembershipsTable({
             <tbody className="divide-y divide-zinc-700/50">
               {membership.map((m, index) => {
                 const shortNameParts = getShortNameParts(m.clientName);
+                const actualId = m.id || m._id; // Soporta ambos
                 return (
-                  <React.Fragment key={m._id}>
+                  <React.Fragment key={actualId}>
                     <tr
-                      onClick={() => toggleRow(m._id)}
+                      onClick={() => toggleRow(actualId)}
                       className="hover:bg-zinc-700/30 transition-all duration-200 cursor-pointer"
                     >
                       {/* Numeración global */}
@@ -126,6 +135,17 @@ export default function MembershipsTable({
                           </span>
                         </div>
                       </td>
+                      <td className="px-6 py-4 text-right">
+                        {m.deuda > 0 ? (
+                          <span className="text-red-400 font-bold bg-red-500/10 px-2 py-1 rounded-md border border-red-500/20">
+                            ${m.deuda.toLocaleString()}
+                          </span>
+                        ) : (
+                          <span className="text-emerald-400 font-bold">
+                            $0
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4">
                         {m.status === "Activa" ? (
                           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
@@ -150,40 +170,40 @@ export default function MembershipsTable({
                         )}
                       </td>
                     </tr>
-                    {expandedRow === m._id && (
-                      <tr key={`${m._id}-expanded`}>
-                        <td colSpan="3" className="px-6 py-4 bg-zinc-700/20">
+                    {expandedRow === actualId && (
+                      <tr key={`${actualId}-expanded`}>
+                        <td colSpan="4" className="px-6 py-4 bg-zinc-700/20">
                           <div className="flex flex-wrap gap-2">
                             <button
-                              onClick={() => getMembership(m._id)}
+                              onClick={(e) => { e.stopPropagation(); getMembership(actualId); }}
                               className="flex items-center gap-1 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 text-blue-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
                             >
                               <Eye size={14} />
                               <span className="hidden sm:inline">Ver</span>
                             </button>
                             <button
-                              onClick={() => updateClient(m)}
+                              onClick={(e) => { e.stopPropagation(); updateClient(m); }}
                               className="flex items-center gap-1 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/30 text-yellow-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
                             >
                               <Edit size={14} />
                               <span className="hidden sm:inline">Actualizar</span>
                             </button>
                             <button
-                              onClick={() => addPayments(m)}
+                              onClick={(e) => { e.stopPropagation(); addPayments(m); }}
                               className="flex items-center gap-1 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
                             >
                               <CreditCard size={14} />
                               <span className="hidden sm:inline">Pagar</span>
                             </button>
                             <button
-                              onClick={() => renewMembership(m)}
-                              className="flex items-center gap-1 bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 text-purple-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
+                              onClick={(e) => { e.stopPropagation(); markAttendance(m); }}
+                              className="flex items-center gap-1 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
                             >
-                              <RefreshCw size={14} />
-                              <span className="hidden sm:inline">Renovar</span>
+                              <Calendar size={14} />
+                              <span className="hidden sm:inline">Ajustar Deuda</span>
                             </button>
                             <button
-                              onClick={() => confirmDelete(m._id)}
+                              onClick={(e) => { e.stopPropagation(); confirmDelete(actualId); }}
                               className="flex items-center gap-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
                             >
                               <Trash2 size={14} />
@@ -209,14 +229,14 @@ export default function MembershipsTable({
       />
       {/* Modal para actualizar */}
       <UpdateModals
-        key={`update-${update?._id}`}
+        key={`update-${update?.id || update?._id}`}
         isOpen={isModalOpenUpdate}
         onClose={() => setIsModalOpenUpdate(false)}
         membership={update}
       />
       {/* Modal para pagos */}
       <PaymentsModals
-        key={`payments-${payments?._id}`}
+        key={`payments-${payments?.id || payments?._id}`}
         isOpen={isModalOpenPayments}
         onClose={() => setisModalOpenPayments(false)}
         membership={payments}
@@ -228,12 +248,12 @@ export default function MembershipsTable({
         onConfirm={() => deleteMembership(membershipToDelete)}
         message="¿Estás seguro que deseas eliminar esta membresía? Esta acción no se puede deshacer."
       />
-      {/* Modal para renovar membresía */}
-      <RenewModal
-        key={`renew-${renew?._id}`}
-        isOpen={isModalOpenRenew}
-        onClose={() => setisModalOpenRenew(false)}
-        membership={renew}
+      {/* Modal de asistencia */}
+      <AttendanceModal
+        key={`attendance-${attendance?.id || attendance?._id}`}
+        isOpen={isModalOpenAttendance}
+        onClose={() => setIsModalOpenAttendance(false)}
+        membership={attendance}
       />
     </>
   );

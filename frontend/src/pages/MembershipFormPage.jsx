@@ -1,5 +1,6 @@
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { useMembership } from "../context/MembershipContext";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function MembershipFormPage() {
@@ -11,8 +12,19 @@ function MembershipFormPage() {
 
   const { createMembership, errors: membershipErrors } = useMembership();
   const navigate = useNavigate();
+  const [isNewPlayer, setIsNewPlayer] = useState(true);
 
   const onSubmit = handleSubmit(async (data) => {
+    // Inyectamos las banderas de negocio
+    data.isNewPlayer = isNewPlayer;
+    if (isNewPlayer) {
+      data.amount = 35000; // Valor fijo de inscripción + mensualidad
+      data.debtMonths = 0;
+    } else {
+      if (data.debtMonths === "") data.debtMonths = 0;
+      data.amount = data.amount ? Number(data.amount) : 0;
+    }
+
     const success = await createMembership(data);
     if (success) {
       navigate("/memberships");
@@ -40,6 +52,65 @@ function MembershipFormPage() {
         )}
 
         <form onSubmit={onSubmit} className="space-y-4">
+          {/* Opciones de tipo de jugador */}
+          <div className="bg-zinc-800/50 p-4 rounded-xl border border-zinc-700 mb-6">
+            <label className="block text-sm font-semibold text-red-400 mb-3">
+              Tipo de Registro
+            </label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="playerType"
+                  checked={isNewPlayer}
+                  onChange={() => setIsNewPlayer(true)}
+                  className="w-4 h-4 text-red-500 focus:ring-red-500 border-gray-300"
+                />
+                <span className="text-white text-sm">Jugador Nuevo</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="playerType"
+                  checked={!isNewPlayer}
+                  onChange={() => setIsNewPlayer(false)}
+                  className="w-4 h-4 text-red-500 focus:ring-red-500 border-gray-300"
+                />
+                <span className="text-white text-sm">Jugador Antiguo</span>
+              </label>
+            </div>
+
+            {isNewPlayer ? (
+              <p className="text-xs text-gray-400 mt-2">
+                * Se le cobrará automáticamente Inscripción + Mensualidad
+                inicial. Su próxima fecha de cobro se ajustará.
+              </p>
+            ) : (
+              <p className="text-xs text-gray-400 mt-2">
+                * Solo se registrará sin cobro de inscripción. Puedes añadir su
+                deuda pendiente abajo.
+              </p>
+            )}
+          </div>
+
+          {!isNewPlayer && (
+            <div className="animate-fade-in-down mb-4">
+              <label className="block text-sm font-semibold text-red-400 mb-2">
+                Deuda Histórica en meses
+              </label>
+              <input
+                type="number"
+                placeholder="¿Cuántos meses debe?"
+                {...register("debtMonths")}
+                defaultValue={0}
+                className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                El valor en pesos se calculará orgánicamente.
+              </p>
+            </div>
+          )}
+
           {/* Nombre */}
           <div>
             <input
@@ -153,20 +224,23 @@ function MembershipFormPage() {
             )}
           </div>
 
-          {/* Cantidad */}
-          <div>
-            <input
-              type="number"
-              placeholder="Cantidad a pagar"
-              {...register("amount", {
-                required: "La cantidad es obligatoria",
-              })}
-              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
-            />
-            {errors.amount && (
-              <p className="text-red-500 text-sm">{errors.amount.message}</p>
-            )}
-          </div>
+          {/* Cantidad a Pagar (Abono Inicial) */}
+          {!isNewPlayer && (
+            <div className="animate-fade-in-down">
+              <label className="block text-sm font-semibold text-red-400 mb-2">
+                Abono Inicial (Opcional)
+              </label>
+              <input
+                type="number"
+                placeholder="Ej: 20000"
+                {...register("amount")}
+                className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Si dejas este campo vacío, el abono inicial será $0.
+              </p>
+            </div>
+          )}
 
           {/* Botones */}
           <div className="flex justify-end gap-3 pt-4">

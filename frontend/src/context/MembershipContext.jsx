@@ -5,7 +5,7 @@ import {
   getMembershipRequest,
   updateMembershipRequest,
   addPaymentsRequest,
-  renewMembershipRequest,
+  adjustDebtRequest,
   delateMembershipRequest,
 } from "../api/memberships";
 
@@ -75,7 +75,7 @@ export const MembershipProvider = ({ children }) => {
 
       setMembership(
         membership.map((m) =>
-          m._id === id
+          m.id === id || m._id === id
             ? { ...m, ...updatedUser } // Combina el objeto original 'm' con los datos actualizados
             : m
         )
@@ -90,27 +90,9 @@ export const MembershipProvider = ({ children }) => {
   const addPayments = async (id, amount) => {
     try {
       const res = await addPaymentsRequest(id, amount);
-      setMembership((prev) => prev.map((m) => (m._id === id ? res.data : m)));
+      setMembership((prev) => prev.map((m) => (m.id === id || m._id === id ? res.data : m)));
     } catch (error) {
       console.error("Error add payments:", error);
-      setErrors(error.response?.data || ["Unexpected error"]);
-      throw error;
-    }
-  };
-
-  const renewMembership = async (id, membership) => {
-    try {
-      const res = await renewMembershipRequest(id, membership);
-
-      setMembership((prev) =>
-        prev.map((m) =>
-          m._id === id
-            ? { ...m, ...res.data } // merge para no perder datos
-            : m
-        )
-      );
-    } catch (error) {
-      console.error("Error renew membership:", error);
       setErrors(error.response?.data || ["Unexpected error"]);
       throw error;
     }
@@ -119,9 +101,31 @@ export const MembershipProvider = ({ children }) => {
   const deleteMembership = async (id) => {
     try {
       await delateMembershipRequest(id);
-      setMembership(membership.filter((membership) => membership._id !== id));
+      setMembership(membership.filter((membership) => membership.id !== id && membership._id !== id));
     } catch (error) {
       console.error("Error deleting membership:", error);
+    }
+  };
+
+  const adjustDebt = async (id, data) => {
+    try {
+      const res = await adjustDebtRequest(id, data);
+      
+      // Extraemos la membership actualizada
+      const updatedMembership = res.data.membership;
+
+      setMembership((prev) =>
+        prev.map((m) =>
+          m.id === id || m._id === id
+            ? { ...m, ...updatedMembership } 
+            : m
+        )
+      );
+      return res.data;
+    } catch (error) {
+      console.error("Error adjusting debt:", error);
+      setErrors(error.response?.data || ["Unexpected error"]);
+      throw error;
     }
   };
 
@@ -133,7 +137,7 @@ export const MembershipProvider = ({ children }) => {
         getMembershipById,
         updateMembership,
         addPayments,
-        renewMembership,
+        adjustDebt,
         deleteMembership,
         membership,
         errors,

@@ -15,8 +15,8 @@ export const updateMembershipRequest = (id, memberShip) =>
 export const addPaymentsRequest = (id, amount) =>
   axios.put(`/memberShip/${id}/payments`, amount);
 
-export const renewMembershipRequest = (id, memberShip) =>
-  axios.put(`/memberShip/${id}/renew`, memberShip);
+export const adjustDebtRequest = (id, data) =>
+  axios.put(`/memberShip/${id}/adjust-debt`, data);
 
 export const delateMembershipRequest = (id) =>
   axios.delete(`/memberShip/${id}`);

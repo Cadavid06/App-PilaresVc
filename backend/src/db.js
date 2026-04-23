@@ -6,11 +6,10 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: "postgres",
   logging: false, // Cambia a console.log si quieres ver las queries SQL
   dialectOptions: {
-
     ssl: {
-       require: true,
-       rejectUnauthorized: false,
-     },
+      require: true,
+      rejectUnauthorized: false,
+    },
   },
 });
 
@@ -20,7 +19,6 @@ export const connectDB = async () => {
     console.log("✅ PostgreSQL conectado correctamente");
 
     // sync({ force: false }) crea las tablas si no existen, sin borrar datos
-    // Usa { force: true } solo en desarrollo para recrear las tablas desde cero
     await sequelize.sync({ force: false });
     console.log("✅ Tablas sincronizadas");
   } catch (error) {

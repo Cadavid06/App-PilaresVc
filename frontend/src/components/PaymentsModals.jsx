@@ -14,7 +14,8 @@ export default function PaymentsModals({ isOpen, onClose, membership }) {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await addPayments(membership._id, data);
+      const actualId = membership.id || membership._id;
+      await addPayments(actualId, data);
       onClose();
     } catch (error) {
       console.error("Error en modal:", error);
