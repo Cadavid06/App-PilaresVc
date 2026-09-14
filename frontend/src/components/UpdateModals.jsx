@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useMembership } from "../context/MembershipContext"; // <-- el hook real
+import { useMembership } from "../context/MembershipContext";
 
 export default function UpdateModals({ isOpen, onClose, membership }) {
   const { updateMembership, errors: membershipErrors } = useMembership();
@@ -11,6 +11,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
     clientPhone: "",
     clientEmail: "",
     birthdate: "",
+    gender: "Masculino",
   });
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
         birthdate: membership.birthdate
           ? new Date(membership.birthdate).toISOString().split("T")[0]
           : "",
+        gender: membership.gender || "Masculino",
       });
     }
   }, [membership]);
@@ -47,8 +49,8 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
   if (!isOpen || !membership) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/50 p-4 rounded-2xl max-w-sm w-full mx-4 shadow-2xl">
+    <div className="fixed inset-0 bg-zinc-900/60 flex items-center justify-center z-50 p-4">
+      <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/50 p-5 rounded-2xl max-w-sm w-full mx-4 shadow-2xl">
         <div className="flex justify-between items-center mb-4">
           <div>
             <h2 className="text-xl font-bold text-white mb-1">Actualizar Jugador</h2>
@@ -81,7 +83,6 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Nombre */}
           <div>
             <label className="block text-xs font-semibold text-red-400 mb-1">
               Nombre del jugador
@@ -96,7 +97,6 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
             />
           </div>
 
-          {/* Tipo de documento */}
           <div>
             <label className="block text-xs font-semibold text-red-400 mb-1">
               Tipo de documento
@@ -108,16 +108,13 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               required
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
             >
-              <option value="" className="bg-zinc-800 text-gray-400">
-                Selecciona un tipo de documento
-              </option>
+              <option value="">Selecciona un tipo de documento</option>
               <option value="TI">TI</option>
               <option value="CC">CC</option>
               <option value="CE">CE</option>
             </select>
           </div>
 
-          {/* Documento */}
           <div>
             <label className="block text-xs font-semibold text-red-400 mb-1">
               Documento
@@ -132,13 +129,12 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
             />
           </div>
 
-          {/* Teléfono */}
           <div>
             <label className="block text-xs font-semibold text-red-400 mb-1">
               Teléfono
             </label>
             <input
-              type="tel"
+              type="text"
               name="clientPhone"
               value={formData.clientPhone}
               onChange={handleChange}
@@ -147,10 +143,9 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
             />
           </div>
 
-          {/* Correo */}
           <div>
             <label className="block text-xs font-semibold text-red-400 mb-1">
-              Correo
+              Email
             </label>
             <input
               type="email"
@@ -162,7 +157,6 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
             />
           </div>
 
-          {/* Fecha de nacimiento */}
           <div>
             <label className="block text-xs font-semibold text-red-400 mb-1">
               Fecha de nacimiento
@@ -177,7 +171,21 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
             />
           </div>
 
-          {/* Botón */}
+          <div>
+            <label className="block text-xs font-semibold text-red-400 mb-1">
+              Género
+            </label>
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200 appearance-none"
+            >
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+            </select>
+          </div>
+
           <div className="flex gap-3 mt-4">
             <button
               type="submit"

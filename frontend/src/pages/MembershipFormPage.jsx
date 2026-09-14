@@ -1,4 +1,4 @@
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useMembership } from "../context/MembershipContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,21 +7,30 @@ function MembershipFormPage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm();
 
-  const { createMembership, errors: membershipErrors } = useMembership();
+  const { createMembership, errors: membershipErrors, settings } = useMembership();
   const navigate = useNavigate();
   const [isNewPlayer, setIsNewPlayer] = useState(true);
 
+  const debtAmount = watch("debtAmount") || 0;
+  const monthlyFee = settings?.monthlyFee || 20000;
+  const inscriptionFee = settings?.inscriptionFee || 15000;
+
+  // Total = deuda que digita el admin + mes actual (automático)
+  const debtTotal = isNewPlayer
+    ? monthlyFee + inscriptionFee
+    : Number(debtAmount) + monthlyFee;
+
   const onSubmit = handleSubmit(async (data) => {
-    // Inyectamos las banderas de negocio
     data.isNewPlayer = isNewPlayer;
     if (isNewPlayer) {
-      data.amount = 35000; // Valor fijo de inscripción + mensualidad
-      data.debtMonths = 0;
+      data.amount = 0;
+      data.debtAmount = 0;
     } else {
-      if (data.debtMonths === "") data.debtMonths = 0;
+      if (data.debtAmount === "") data.debtAmount = 0;
       data.amount = data.amount ? Number(data.amount) : 0;
     }
 
@@ -52,7 +61,7 @@ function MembershipFormPage() {
         )}
 
         <form onSubmit={onSubmit} className="space-y-4">
-          {/* Opciones de tipo de jugador */}
+          {/* Tipo de jugador */}
           <div className="bg-zinc-800/50 p-4 rounded-xl border border-zinc-700 mb-6">
             <label className="block text-sm font-semibold text-red-400 mb-3">
               Tipo de Registro
@@ -82,37 +91,53 @@ function MembershipFormPage() {
 
             {isNewPlayer ? (
               <p className="text-xs text-gray-400 mt-2">
-                * Se le cobrará automáticamente Inscripción + Mensualidad
-                inicial. Su próxima fecha de cobro se ajustará.
+                * Se le cobrará automáticamente Inscripción + Mensualidad inicial.
               </p>
             ) : (
               <p className="text-xs text-gray-400 mt-2">
-                * Solo se registrará sin cobro de inscripción. Puedes añadir su
-                deuda pendiente abajo.
+                * Sin cobro de inscripción. Ingresa la deuda total abajo.
               </p>
             )}
+
+            {/* Resumen de cobro */}
+            <div className="mt-3 bg-zinc-700/40 rounded-lg p-3 border border-zinc-600/30">
+              <p className="text-xs text-gray-300 mb-1 font-semibold">Resumen de cobro:</p>
+              {isNewPlayer ? (
+                <div className="text-xs text-gray-400 space-y-0.5">
+                  <p>Inscripción: <span className="text-white">${inscriptionFee.toLocaleString()}</span></p>
+                  <p>Mensualidad: <span className="text-white">${monthlyFee.toLocaleString()}</span></p>
+                  <p className="text-red-400 font-semibold">Total a cobrar: ${debtTotal.toLocaleString()}</p>
+                </div>
+              ) : (
+                <div className="text-xs text-gray-400 space-y-0.5">
+                  <p>Deuda que digita el admin: <span className="text-white">${Number(debtAmount).toLocaleString()}</span></p>
+                  <p>Mes actual (automático): <span className="text-white">${monthlyFee.toLocaleString()}</span></p>
+                  <p className="text-red-400 font-semibold">Total a pagar: ${debtTotal.toLocaleString()}</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {!isNewPlayer && (
-            <div className="animate-fade-in-down mb-4">
+            <div>
               <label className="block text-sm font-semibold text-red-400 mb-2">
-                Deuda Histórica en meses
+                Deuda total en pesos
               </label>
               <input
                 type="number"
-                placeholder="¿Cuántos meses debe?"
-                {...register("debtMonths")}
-                defaultValue={0}
-                className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                placeholder="Ej: 80000"
+                {...register("debtAmount")}
+                className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
               />
               <p className="text-xs text-gray-400 mt-1">
-                El valor en pesos se calculará orgánicamente.
+                Ingresa cuánto debe en total. El sistema suma el mes actual.
               </p>
             </div>
           )}
 
           {/* Nombre */}
           <div>
+            <label className="block text-sm font-semibold text-red-400 mb-1">Nombre completo</label>
             <input
               type="text"
               placeholder="Nombre completo"
@@ -122,42 +147,50 @@ function MembershipFormPage() {
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
             {errors.clientName && (
-              <p className="text-red-500 text-sm">
-                {errors.clientName.message}
-              </p>
+              <p className="text-red-500 text-sm mt-1">{errors.clientName.message}</p>
+            )}
+          </div>
+
+          {/* Género */}
+          <div>
+            <label className="block text-sm font-semibold text-red-400 mb-1">Género</label>
+            <select
+              {...register("gender", {
+                required: "Debes seleccionar el género",
+              })}
+              defaultValue="Masculino"
+              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+            >
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+            </select>
+            {errors.gender && (
+              <p className="text-red-500 text-sm mt-1">{errors.gender.message}</p>
             )}
           </div>
 
           {/* Tipo de documento */}
           <div>
+            <label className="block text-sm font-semibold text-red-400 mb-1">Tipo de documento</label>
             <select
               {...register("documentType", {
                 required: "Debes seleccionar un tipo de documento",
               })}
-              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
             >
-              <option value="" className="bg-zinc-800 text-gray-400">
-                Selecciona un tipo de documento
-              </option>
-              <option value="TI" className="bg-zinc-800 text-white">
-                TI
-              </option>
-              <option value="CC" className="bg-zinc-800 text-white">
-                CC
-              </option>
-              <option value="CE" className="bg-zinc-800 text-white">
-                CE
-              </option>
+              <option value="">Selecciona un tipo de documento</option>
+              <option value="TI">TI</option>
+              <option value="CC">CC</option>
+              <option value="CE">CE</option>
             </select>
             {errors.documentType && (
-              <p className="text-red-500 text-sm">
-                {errors.documentType.message}
-              </p>
+              <p className="text-red-500 text-sm mt-1">{errors.documentType.message}</p>
             )}
           </div>
 
           {/* Documento */}
           <div>
+            <label className="block text-sm font-semibold text-red-400 mb-1">Número de documento</label>
             <input
               type="text"
               placeholder="Número de documento"
@@ -167,14 +200,13 @@ function MembershipFormPage() {
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
             {errors.clientDocument && (
-              <p className="text-red-500 text-sm">
-                {errors.clientDocument.message}
-              </p>
+              <p className="text-red-500 text-sm mt-1">{errors.clientDocument.message}</p>
             )}
           </div>
 
           {/* Teléfono */}
           <div>
+            <label className="block text-sm font-semibold text-red-400 mb-1">Teléfono</label>
             <input
               type="tel"
               placeholder="Teléfono"
@@ -184,14 +216,13 @@ function MembershipFormPage() {
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
             {errors.clientPhone && (
-              <p className="text-red-500 text-sm">
-                {errors.clientPhone.message}
-              </p>
+              <p className="text-red-500 text-sm mt-1">{errors.clientPhone.message}</p>
             )}
           </div>
 
           {/* Correo */}
           <div>
+            <label className="block text-sm font-semibold text-red-400 mb-1">Correo electrónico</label>
             <input
               type="email"
               placeholder="Correo electrónico"
@@ -201,17 +232,13 @@ function MembershipFormPage() {
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
             {errors.clientEmail && (
-              <p className="text-red-500 text-sm">
-                {errors.clientEmail.message}
-              </p>
+              <p className="text-red-500 text-sm mt-1">{errors.clientEmail.message}</p>
             )}
           </div>
 
           {/* Fecha de nacimiento */}
           <div>
-            <label className="block text-sm font-semibold text-red-400 mb-2">
-              Fecha de nacimiento
-            </label>
+            <label className="block text-sm font-semibold text-red-400 mb-1">Fecha de nacimiento</label>
             <input
               type="date"
               {...register("birthdate", {
@@ -220,14 +247,14 @@ function MembershipFormPage() {
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
             />
             {errors.birthdate && (
-              <p className="text-red-500 text-sm">{errors.birthdate.message}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.birthdate.message}</p>
             )}
           </div>
 
-          {/* Cantidad a Pagar (Abono Inicial) */}
+          {/* Abono inicial */}
           {!isNewPlayer && (
-            <div className="animate-fade-in-down">
-              <label className="block text-sm font-semibold text-red-400 mb-2">
+            <div>
+              <label className="block text-sm font-semibold text-red-400 mb-1">
                 Abono Inicial (Opcional)
               </label>
               <input
@@ -245,17 +272,17 @@ function MembershipFormPage() {
           {/* Botones */}
           <div className="flex justify-end gap-3 pt-4">
             <button
-              type="submit"
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold transition-all duration-200 shadow-lg shadow-red-500/25"
-            >
-              Guardar
-            </button>
-            <button
               type="button"
               onClick={() => navigate("/memberships")}
               className="px-6 py-3 rounded-xl bg-zinc-600 hover:bg-zinc-700 text-white font-semibold transition-all duration-200"
             >
               Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold transition-all duration-200 shadow-lg shadow-red-500/25"
+            >
+              Guardar
             </button>
           </div>
         </form>

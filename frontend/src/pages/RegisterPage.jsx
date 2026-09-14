@@ -1,8 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useAuth } from "../context/AuthContext";
-import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import fondo4 from "/images/fondo4.jpg";
+import { UserPlus } from "lucide-react";
 
 function RegisterPage() {
   const {
@@ -10,80 +9,90 @@ function RegisterPage() {
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const { signUp, isAuthenticated, errors: registerErrors } = useAuth();
+  const { signUp, errors: registerErrors } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isAuthenticated);
-  }, [isAuthenticated]);
-
   const onSubmit = handleSubmit(async (data) => {
-    signUp(data);
-    navigate('/memberships')
+    const success = await signUp(data);
+    if (success) navigate("/users");
   });
 
   return (
-    <div
-      className="relative h-screen flex justify-center items-center bg-cover bg-center overflow-auto"
-      style={{ backgroundImage: `url(${fondo4})` }}
-    >
-      <div className="w-full max-w-md p-8 rounded-2xl shadow-2xl bg-black/30 backdrop-blur-xs border border-red-500/20 mx-5">
-        <h1 className="text-3xl font-bold text-red-400 mb-6 text-center">
-          Crear Cuenta
-        </h1>
+    <div className="relative min-h-screen flex justify-center items-center overflow-auto py-12">
+      <div className="w-full max-w-md p-8 rounded-2xl shadow-2xl bg-zinc-800/80 border border-zinc-700/50 mx-5">
+        <div className="flex flex-col items-center mb-6">
+          <div className="p-3 bg-red-500/10 rounded-full mb-3">
+            <UserPlus className="w-8 h-8 text-red-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-white">Crear usuario</h1>
+          <p className="text-gray-400 text-sm mt-1">Registra un nuevo admin o entrenador</p>
+        </div>
 
-        {registerErrors.length > 0 && (
-          <ul className="mb-4">
+        {registerErrors && registerErrors.length > 0 && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
             {registerErrors.map((error, i) => (
-              <li key={i} className="text-red-500 text-sm">
-                {error}
-              </li>
+              <p key={i} className="text-red-400 text-sm">{error}</p>
             ))}
-          </ul>
+          </div>
         )}
 
         <form className="space-y-4" onSubmit={onSubmit}>
           <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Rol</label>
+            <select
+              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all appearance-none"
+              {...register("role")}
+              defaultValue="entrenador"
+            >
+              <option value="entrenador" className="bg-zinc-800">Entrenador</option>
+              <option value="admin" className="bg-zinc-800">Admin</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              El entrenador solo puede ver, pagar y condonar deudas.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
             <input
-              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
               type="email"
-              placeholder="Email"
+              placeholder="tu@email.com"
               {...register("email", { required: "El email es obligatorio" })}
             />
             {errors.email && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.email.message}
-              </p>
+              <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>
             )}
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">Contraseña</label>
             <input
-              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
               type="password"
-              placeholder="Contraseña"
+              placeholder="••••••••"
               {...register("password", {
                 required: "La contraseña es obligatoria",
               })}
             />
             {errors.password && (
-              <p className="text-red-500 text-sm mt-1">
+              <p className="text-red-400 text-sm mt-1">
                 {errors.password.message}
               </p>
             )}
           </div>
 
           <button
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold transition-all duration-200 shadow-lg shadow-red-500/25"
+            className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-all duration-200 shadow-lg shadow-red-600/20 mt-2"
             type="submit"
           >
-            Registrarse
+            Crear usuario
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-300 mt-6">
-          <Link to="/memberships" className="text-red-400 hover:text-red-300">
-            Regresar
+        <p className="text-center text-sm text-gray-400 mt-6">
+          <Link to="/users" className="text-red-400 hover:text-red-300 transition-colors">
+            Volver a usuarios
           </Link>
         </p>
       </div>

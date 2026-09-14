@@ -1,9 +1,8 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db.js";
 
-// Equivalente al adminSchema de Mongoose
-const Admin = sequelize.define(
-  "Admin",
+const User = sequelize.define(
+  "User",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -22,11 +21,16 @@ const Admin = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    role: {
+      type: DataTypes.ENUM("admin", "entrenador"),
+      allowNull: false,
+      defaultValue: "entrenador",
+    },
   },
   {
-    tableName: "admins",
-    timestamps: true, // crea createdAt y updatedAt automáticamente
+    tableName: "users",
+    timestamps: true,
   }
 );
 
-export default Admin;
+export default User;

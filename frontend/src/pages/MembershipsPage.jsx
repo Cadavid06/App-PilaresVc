@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Plus } from "lucide-react";
 import MembershipsTable from "../components/MembershipsTable";
 import { useMembership } from "../context/MembershipContext";
 
@@ -6,6 +8,8 @@ function MembershipPage() {
   const { membership, getMemberships } = useMembership();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterGender, setFilterGender] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,7 +24,9 @@ function MembershipPage() {
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "all" || m.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    const matchesGender = filterGender === "all" || m.gender === filterGender;
+    const matchesCategory = filterCategory === "all" || m.category === filterCategory;
+    return matchesSearch && matchesStatus && matchesGender && matchesCategory;
   });
 
   // Calcular las membresías que se muestran en esta página
@@ -34,85 +40,88 @@ function MembershipPage() {
   const totalPages = Math.ceil(filteredMemberships.length / itemsPerPage);
 
   return (
-    <div className="relative z-10 my-15 w-full">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 ">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <div className="relative z-10 my-6 w-full">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
-            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2">
+            <h1 className="text-3xl font-bold text-white">
               Membresías
             </h1>
-            <p className="text-red-400 text-lg">
-              Gestiona las membresías de tu club
+            <p className="text-gray-400 text-sm mt-1">
+              {filteredMemberships.length} jugador{filteredMemberships.length !== 1 ? 'es' : ''}
             </p>
           </div>
-          <div className="bg-red-500/10 backdrop-blur-sm border border-red-500/20 rounded-lg px-4 py-2">
-            <span className="text-red-400 font-semibold">
-              Total: {filteredMemberships.length} membresías
-            </span>
+          <Link
+            to="/add-memberships"
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-all"
+          >
+            <Plus size={16} />
+            Nuevo jugador
+          </Link>
+        </div>
+
+        <div className="bg-zinc-800/60 border border-zinc-700/50 rounded-xl p-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              placeholder="Buscar por nombre..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full sm:w-1/3 bg-zinc-700/50 border border-zinc-600/50 text-white px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            />
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { key: "all", label: "Todos", color: "bg-zinc-600 text-white" },
+                { key: "Activa", label: "Activos", color: "bg-emerald-600 text-white" },
+                { key: "Pendiente", label: "Pendientes", color: "bg-yellow-600 text-white" },
+                { key: "Expirada", label: "Expirados", color: "bg-red-600 text-white" },
+              ].map(({ key, label, color }) => (
+                <button
+                  key={key}
+                  onClick={() => { setFilterStatus(key === "all" ? "all" : key); setCurrentPage(1); }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    (key === "all" && filterStatus === "all") || filterStatus === key
+                      ? color
+                      : "bg-zinc-700/50 text-gray-400 hover:text-white hover:bg-zinc-600/50"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 mt-3">
+            <select
+              value={filterGender}
+              onChange={(e) => { setFilterGender(e.target.value); setCurrentPage(1); }}
+              className="bg-zinc-700/50 border border-zinc-600/50 text-gray-300 px-3 py-1.5 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+            >
+              <option value="all">Todos los géneros</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+            </select>
+            <select
+              value={filterCategory}
+              onChange={(e) => { setFilterCategory(e.target.value); setCurrentPage(1); }}
+              className="bg-zinc-700/50 border border-zinc-600/50 text-gray-300 px-3 py-1.5 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
+            >
+              <option value="all">Todas las categorías</option>
+              <option value="Mini">Mini</option>
+              <option value="Sub-13">Sub-13</option>
+              <option value="Sub-15">Sub-15</option>
+              <option value="Sub-17">Sub-17</option>
+              <option value="Sub-19">Sub-19</option>
+              <option value="Sub-21">Sub-21</option>
+              <option value="Libre">Libre</option>
+            </select>
           </div>
         </div>
 
-        {/* Filtros */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <input
-            type="text"
-            placeholder="Buscar por nombre de jugador..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full sm:w-1/2 bg-zinc-800/50 backdrop-blur-sm border border-zinc-700/50 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-          />
-          <div className="flex flex-wrap w-full sm:w-1/2 gap-2">
-            <button
-              onClick={() => setFilterStatus("all")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filterStatus === "all"
-                  ? "bg-red-500 text-white"
-                  : "bg-zinc-800/50 border border-zinc-700/50 text-gray-400 hover:bg-zinc-700/50"
-              }`}
-            >
-              Todos
-            </button>
-            <button
-              onClick={() => setFilterStatus("Activa")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filterStatus === "Activa"
-                  ? "bg-green-600 text-white"
-                  : "bg-zinc-800/50 border border-zinc-700/50 text-gray-400 hover:bg-zinc-700/50"
-              }`}
-            >
-              Activos
-            </button>
-            <button
-              onClick={() => setFilterStatus("Pendiente")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filterStatus === "Pendiente"
-                  ? "bg-yellow-600 text-white"
-                  : "bg-zinc-800/50 border border-zinc-700/50 text-gray-400 hover:bg-zinc-700/50"
-              }`}
-            >
-              Pendientes
-            </button>
-            <button
-              onClick={() => setFilterStatus("Expirada")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                filterStatus === "Expirada"
-                  ? "bg-red-600 text-white"
-                  : "bg-zinc-800/50 border border-zinc-700/50 text-gray-400 hover:bg-zinc-700/50"
-              }`}
-            >
-              Expirados
-            </button>
-          </div>
-        </div>
-
-        <div className="grid gap-6">
+        <div className="grid gap-4">
           {currentMemberships.length === 0 ? (
-            <div className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700/50 p-8 rounded-xl text-center">
-              <h3 className="text-xl font-semibold text-white mb-2">
-                No hay resultados
-              </h3>
-              <p className="text-gray-400 mb-4">
-                Ajusta los filtros o la búsqueda para encontrar membresías
+            <div className="bg-zinc-800/60 border border-zinc-700/50 p-12 rounded-xl text-center">
+              <p className="text-gray-400">
+                No se encontraron membresías con estos filtros
               </p>
             </div>
           ) : (
@@ -123,36 +132,37 @@ function MembershipPage() {
                 itemsPerPage={itemsPerPage}
               />
 
-              {/* Paginación */}
-              <div className="flex justify-center mt-6 gap-2">
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((prev) => prev - 1)}
-                  className="px-3 py-1 rounded bg-zinc-700 text-gray-300 disabled:opacity-50"
-                >
-                  Anterior
-                </button>
-                {[...Array(totalPages)].map((_, i) => (
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-4 gap-1">
                   <button
-                    key={i}
-                    onClick={() => setCurrentPage(i + 1)}
-                    className={`px-3 py-1 rounded ${
-                      currentPage === i + 1
-                        ? "bg-red-500 text-white"
-                        : "bg-zinc-700 text-gray-300"
-                    }`}
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((prev) => prev - 1)}
+                    className="px-3 py-1.5 rounded-lg text-sm bg-zinc-700/50 text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                   >
-                    {i + 1}
+                    ←
                   </button>
-                ))}
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((prev) => prev + 1)}
-                  className="px-3 py-1 rounded bg-zinc-700 text-gray-300 disabled:opacity-50"
-                >
-                  Siguiente
-                </button>
-              </div>
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentPage(i + 1)}
+                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${
+                        currentPage === i + 1
+                          ? "bg-red-600 text-white"
+                          : "bg-zinc-700/50 text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((prev) => prev + 1)}
+                    className="px-3 py-1.5 rounded-lg text-sm bg-zinc-700/50 text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  >
+                    →
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>

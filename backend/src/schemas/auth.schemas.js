@@ -8,7 +8,8 @@ export const registerSchema = z.object({
     }),
     password: z.string({
         required_error: 'Password is required'
-    })
+    }),
+    role: z.enum(['admin', 'entrenador']).optional()
 });
 
 export const loginSchema = z.object({

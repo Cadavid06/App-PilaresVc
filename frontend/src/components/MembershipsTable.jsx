@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useMembership } from "../context/MembershipContext";
+import { useAuth } from "../context/AuthContext";
 import {
   ChevronDown,
   Eye,
@@ -21,6 +22,8 @@ export default function MembershipsTable({
   itemsPerPage,
 }) {
   const { getMembershipById, deleteMembership } = useMembership();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [expandedRow, setExpandedRow] = useState(null);
   const [selectedMembership, setSelectedMembership] = useState(null);
   const [isModalOpenMembership, setIsModalOpenMembership] = useState(false);
@@ -43,22 +46,18 @@ export default function MembershipsTable({
     setIsModalOpenMembership(true);
   };
 
-  const updateClient = async (membership) => {
-    setUpdate(membership);
+  const updateClient = (member) => {
+    setUpdate(member);
     setIsModalOpenUpdate(true);
   };
 
-  const addPayments = async (membership) => {
-    setPayments(membership);
+  const addPayments = (member) => {
+    setPayments(member);
     setisModalOpenPayments(true);
   };
 
-  const markAttendance = async (membership) => {
-    if (membership.status === "Activa") {
-      alert("No se puede ajustar deuda a un jugador que está al día (Activo).");
-      return;
-    }
-    setAttendance(membership);
+  const markAttendance = (member) => {
+    setAttendance(member);
     setIsModalOpenAttendance(true);
   };
 
@@ -69,15 +68,12 @@ export default function MembershipsTable({
 
   const getShortNameParts = (fullName) => {
     const nameParts = fullName.split(' ');
-    // Si el nombre tiene 3 o más partes, toma la primera y la tercera (ej: Osvaldo David Chamorro -> Osvaldo Chamorro)
     if (nameParts.length >= 3) {
       return [nameParts[0], nameParts[2]];
     }
-    // Si el nombre tiene 2 partes, toma la primera y la segunda (ej: Juan Pérez -> Juan Pérez)
     if (nameParts.length === 2) {
       return [nameParts[0], nameParts[1]];
     }
-    // Si el nombre tiene solo 1 palabra, la devuelve
     return [fullName];
   };
 
@@ -86,8 +82,8 @@ export default function MembershipsTable({
       <div className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700/50 rounded-2xl shadow-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-white">
-            <thead className="bg-gradient-to-r from-red-600/20 to-red-500/20 border-b border-red-500/30">
-              <tr>
+            <thead>
+              <tr className="bg-gradient-to-r from-red-600/20 to-red-500/20 border-b border-red-500/30">
                 <th className="px-6 py-4 text-red-400 font-semibold text-sm uppercase tracking-wider">
                   #
                 </th>
@@ -100,25 +96,29 @@ export default function MembershipsTable({
                 <th className="px-6 py-4 text-red-400 font-semibold text-sm uppercase tracking-wider">
                   Estado
                 </th>
+                <th className="px-6 py-4 text-red-400 font-semibold text-sm uppercase tracking-wider">
+                  Género
+                </th>
+                <th className="px-6 py-4 text-red-400 font-semibold text-sm uppercase tracking-wider">
+                  Categoría
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-700/50">
               {membership.map((m, index) => {
                 const shortNameParts = getShortNameParts(m.clientName);
-                const actualId = m.id || m._id; // Soporta ambos
+                const actualId = m.id || m._id;
                 return (
                   <React.Fragment key={actualId}>
                     <tr
                       onClick={() => toggleRow(actualId)}
                       className="hover:bg-zinc-700/30 transition-all duration-200 cursor-pointer"
                     >
-                      {/* Numeración global */}
                       <td className="px-6 py-4 text-gray-400">
                         {(currentPage - 1) * itemsPerPage + index + 1}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          {/* Nombres en dos líneas para móviles */}
                           <div className="font-semibold text-white text-sm md:hidden">
                             {shortNameParts.length > 1 ? (
                               <>
@@ -129,7 +129,6 @@ export default function MembershipsTable({
                               <p className="leading-tight">{shortNameParts[0]}</p>
                             )}
                           </div>
-                          {/* Nombre completo para pantallas grandes */}
                           <span className="font-semibold text-white hidden md:block">
                             {m.clientName}
                           </span>
@@ -169,10 +168,20 @@ export default function MembershipsTable({
                           </span>
                         )}
                       </td>
+                      <td className="px-6 py-4">
+                        <span className="text-gray-300 text-sm">
+                          {m.gender || "—"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                          {m.category || "—"}
+                        </span>
+                      </td>
                     </tr>
                     {expandedRow === actualId && (
                       <tr key={`${actualId}-expanded`}>
-                        <td colSpan="4" className="px-6 py-4 bg-zinc-700/20">
+                        <td colSpan="7" className="px-6 py-4 bg-zinc-700/20">
                           <div className="flex flex-wrap gap-2">
                             <button
                               onClick={(e) => { e.stopPropagation(); getMembership(actualId); }}
@@ -202,13 +211,15 @@ export default function MembershipsTable({
                               <Calendar size={14} />
                               <span className="hidden sm:inline">Ajustar Deuda</span>
                             </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); confirmDelete(actualId); }}
-                              className="flex items-center gap-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
-                            >
-                              <Trash2 size={14} />
-                              <span className="hidden sm:inline">Eliminar</span>
-                            </button>
+                            {isAdmin && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); confirmDelete(actualId); }}
+                                className="flex items-center gap-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
+                              >
+                                <Trash2 size={14} />
+                                <span className="hidden sm:inline">Eliminar</span>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

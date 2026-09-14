@@ -2,9 +2,6 @@ import axios from "./axios";
 
 export const registerRequest = async (user) => {
   const response = await axios.post("/register", user);
-  if (response.data.token) {
-    localStorage.setItem("authToken", response.data.token); // Guardar token
-  }
   return response;
 };
 

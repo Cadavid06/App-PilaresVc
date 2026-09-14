@@ -1,10 +1,22 @@
-/* index.css */
 @import "tailwindcss";
 
 body {
-  background-image: url("../public/images/fondo4.jpg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: linear-gradient(135deg, #18181b 0%, #27272a 50%, #1e1e22 100%);
   min-height: 100vh;
+  color: white;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #27272a;
+}
+::-webkit-scrollbar-thumb {
+  background: #52525b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #71717a;
 }

@@ -8,6 +8,13 @@ import {
   adjustDebtRequest,
   delateMembershipRequest,
 } from "../api/memberships";
+import { getSettingsRequest, updateSettingsRequest } from "../api/settings";
+
+const DEFAULT_SETTINGS = {
+  monthlyFee: 20000,
+  inscriptionFee: 15000,
+  reactivationFee: 20000,
+};
 
 const MembershipContext = createContext();
 
@@ -22,6 +29,7 @@ export const useMembership = () => {
 export const MembershipProvider = ({ children }) => {
   const [membership, setMembership] = useState([]);
   const [errors, setErrors] = useState();
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
 
   useEffect(() => {
     if (errors !== "") {
@@ -32,6 +40,30 @@ export const MembershipProvider = ({ children }) => {
       return () => clearTimeout(timer);
     }
   }, [errors]);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await getSettingsRequest();
+        setSettings(res.data);
+      } catch (error) {
+        console.error("Error loading settings:", error);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const updateSettings = async (data) => {
+    try {
+      const res = await updateSettingsRequest(data);
+      setSettings(res.data);
+      return { success: true, data: res.data };
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      setErrors(error.response?.data || ["Unexpected error"]);
+      return { success: false, error };
+    }
+  };
 
   const createMembership = async (membership) => {
     try {
@@ -141,6 +173,8 @@ export const MembershipProvider = ({ children }) => {
         deleteMembership,
         membership,
         errors,
+        settings,
+        updateSettings,
       }}
     >
       {children}

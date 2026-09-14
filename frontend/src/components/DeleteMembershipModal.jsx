@@ -2,7 +2,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, message }) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 p-4">
+    <div className="fixed inset-0 flex items-center justify-center bg-zinc-900/60 z-50 p-4">
       <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/50 text-white rounded-2xl shadow-2xl w-full max-w-md mx-4">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
@@ -35,16 +35,13 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, message }) {
             </button>
             <button
               className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 px-6 py-3 rounded-xl text-white font-semibold transition-all duration-200 shadow-lg shadow-red-500/25"
-              onClick={() => {
-                onConfirm()
-                onClose()
-              }}
+              onClick={onConfirm}
             >
-              Sí, eliminar
+              Eliminar
             </button>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

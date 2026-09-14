@@ -57,12 +57,16 @@ export const AuthProvider = ({ children }) => {
   const signUp = async (user) => {
     try {
       const res = await registerRequest(user);
-      console.log(res.data);
-      setUser(res.data);
-      setIsAuthenticated(true);
+      // Si hay token, es auto-registro → actualizar sesión
+      if (res.data.token) {
+        setUser(res.data);
+        setIsAuthenticated(true);
+      }
+      return true;
     } catch (error) {
       console.log(error.response);
       setErrors(error.response?.data || ["Unexpected error"]);
+      return false;
     }
   };
 

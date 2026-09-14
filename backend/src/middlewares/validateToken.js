@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
-import Admin from "../models/admin.models.js";
+import User from "../models/user.models.js";
+import { TOKEN_SECRET } from "../config.js";
 
 export const authRequired = async (req, res, next) => {
   try {
@@ -16,15 +17,13 @@ export const authRequired = async (req, res, next) => {
       return res.status(401).json({ message: "No token provided" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Sequelize: findByPk() reemplaza a findById()
-    const admin = await Admin.findByPk(decoded.id);
-    if (!admin) {
+    const decoded = jwt.verify(token, TOKEN_SECRET);
+    const user = await User.findByPk(decoded.id);
+    if (!user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    req.admin = admin;
+    req.user = user;
     next();
   } catch (error) {
     console.error("authRequired error:", error);

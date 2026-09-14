@@ -12,28 +12,23 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      monthsToForgive: 0,
+      amountToForgive: 0,
     }
   });
   
-  const { adjustDebt, errors: membershipErrors } = useMembership();
+  const { adjustDebt, errors: membershipErrors, settings } = useMembership();
   const [successMsg, setSuccessMsg] = useState("");
 
   const actualId = membership?.id || membership?._id;
   const currentDebt = membership?.deuda || 0;
-  
-  // Calcular límite máximo de condonación
-  // Deuda: 40000 -> 2 meses. Se puede perdonar máximo 1.
-  const maxMonthsToForgive = Math.max(0, Math.floor(currentDebt / 20000) - 1);
+  const monthlyFee = settings?.monthlyFee || 20000;
 
-  // Observar meses a condonar para mostrar cuánto le quedará debiendo dinámicamente
-  const watchedMonths = watch("monthsToForgive") || 0;
-  const projectedDebt = Math.max(0, currentDebt - (watchedMonths * 20000));
+  const watchedAmount = watch("amountToForgive") || 0;
+  const projectedDebt = Math.max(0, currentDebt - Number(watchedAmount));
 
-  // Reset del formulario al abrir
   useEffect(() => {
     if (isOpen) {
-      reset({ monthsToForgive: 0, amountToPay: "" });
+      reset({ amountToForgive: 0 });
       setSuccessMsg("");
     }
   }, [isOpen, reset]);
@@ -42,7 +37,7 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
     try {
       setSuccessMsg("");
       const payload = {
-        monthsToForgive: parseInt(data.monthsToForgive, 10),
+        amountToForgive: parseFloat(data.amountToForgive) || 0,
       };
 
       const res = await adjustDebt(actualId, payload);
@@ -60,16 +55,15 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
   if (!isOpen || !membership) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/60">
       <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
         
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-zinc-800 bg-zinc-800/30">
-          <div className="flex items-center gap-3">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-zinc-800 bg-zinc-800/30">
+          <div className="flex items-center gap-2">
             <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
-              <Calendar size={20} />
+              <Calendar size={18} />
             </div>
-            <h2 className="text-xl font-bold text-white">Ajustar Deuda</h2>
+            <h2 className="text-lg font-bold text-white">Ajustar Deuda</h2>
           </div>
           <button
             onClick={onClose}
@@ -79,7 +73,6 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
           </button>
         </div>
 
-        {/* Body */}
         <div className="p-6">
           <p className="text-sm text-gray-400 mb-6">
             Ajustando la cuenta de <strong className="text-white">{membership.clientName}</strong>. 
@@ -87,37 +80,37 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
           </p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            {/* Input Condonación */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Meses a condonar (por inasistencia)
+                Monto a condonar (por inasistencia)
               </label>
-              <input
-                type="number"
-                min="0"
-                max={maxMonthsToForgive}
-                {...register("monthsToForgive", { 
-                  required: "Especifica los meses a perdonar",
-                  min: { value: 0, message: "No puede ser menor a 0" },
-                  max: { value: maxMonthsToForgive, message: `Solo puedes condonar hasta ${maxMonthsToForgive} meses` }
-                })}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500"
-              />
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-indigo-400 font-bold">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1000"
+                  placeholder="0"
+                  {...register("amountToForgive", { 
+                    required: "Especifica el monto a condonar",
+                    min: { value: 0, message: "No puede ser menor a 0" },
+                  })}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl pl-8 pr-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
               <p className="text-xs text-gray-400 mt-2">
-                Máximo permitido: <strong>{maxMonthsToForgive} meses</strong> (El mes actual no se puede condonar).
+                Máximo permitido: <strong>${(currentDebt - monthlyFee).toLocaleString()}</strong> (el mes actual no se condona).
               </p>
             </div>
 
-            {/* Dinámica de Deuda Restante */}
             <div className="bg-black/30 border border-zinc-800 rounded-xl p-4 flex justify-between items-center">
               <span className="text-sm text-gray-400">Deuda Restante Tras Ajuste:</span>
               <span className="text-lg font-bold text-red-400">${projectedDebt.toLocaleString()}</span>
             </div>
 
-            {/* Error & Success Messages */}
-            {errors.monthsToForgive ? (
+            {errors.amountToForgive ? (
               <p className="text-red-500 text-sm flex items-center gap-1">
-                <AlertCircle size={14} /> Revisa los valores ingresados. {errors.monthsToForgive.message}
+                <AlertCircle size={14} /> Revisa los valores ingresados. {errors.amountToForgive.message}
               </p>
             ) : null}
             
@@ -146,7 +139,7 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
                 type="submit"
                 className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all duration-200"
               >
-                Ajustar Deuda
+                Condonar Deuda
               </button>
             </div>
           </form>
