@@ -23,16 +23,18 @@ function LoginPage() {
   });
 
   return (
-    <div className="relative h-screen flex justify-center items-center overflow-auto">
-      <div className="w-full max-w-md p-8 rounded-2xl shadow-2xl bg-zinc-800/80 border border-zinc-700/50 mx-5">
-        <div className="flex flex-col items-center mb-6">
-          <div className="p-3 bg-red-500/10 rounded-full mb-3">
-            <Volleyball className="w-10 h-10 text-red-400" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-auto px-4 py-8">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(220,38,38,0.18),transparent_30rem)]" />
+      <div className="relative w-full max-w-md rounded-3xl border border-white/10 bg-zinc-950/80 p-7 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-9">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="mb-5 rounded-2xl border border-red-400/25 bg-red-600 p-3.5 shadow-lg shadow-red-950/50">
+            <Volleyball className="size-10 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">
-            Pilares Voleibol Club
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-red-400">Pilares VC</p>
+          <h1 className="text-2xl font-black tracking-tight text-white">
+            Panel de membresías
           </h1>
-          <p className="text-gray-400 text-sm mt-1">Inicia sesión para continuar</p>
+          <p className="mt-2 text-sm text-zinc-400">Administra el equipo desde un solo lugar</p>
         </div>
 
         {loginErrors.length > 0 && (
@@ -80,7 +82,7 @@ function LoginPage() {
           </button>
         </form>
       </div>
-    </div>
+    </main>
   );
 }
 

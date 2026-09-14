@@ -12,8 +12,8 @@ export default function Navbar() {
   const isAdmin = user?.role === "admin";
 
   return (
-    <nav className="bg-zinc-800/90 backdrop-blur-sm border border-zinc-700/50 my-4 mx-4 rounded-xl shadow-lg">
-      <div className="flex justify-between items-center px-6 py-3">
+    <nav className="sticky top-3 z-40 mx-3 my-3 rounded-2xl border border-white/10 bg-zinc-950/85 shadow-2xl shadow-black/20 backdrop-blur-xl sm:mx-6">
+      <div className="flex min-h-16 items-center justify-between px-4 sm:px-6">
         <Link to="/memberships" className="flex items-center gap-3">
           <div className="p-1.5 bg-red-600 rounded-lg">
             <Volleyball className="w-6 h-6 text-white" />

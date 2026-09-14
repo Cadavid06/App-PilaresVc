@@ -40,15 +40,16 @@ function MembershipPage() {
   const totalPages = Math.ceil(filteredMemberships.length / itemsPerPage);
 
   return (
-    <div className="relative z-10 my-6 w-full">
+    <main className="relative z-10 w-full py-6 sm:py-8">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div className="mb-7 flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-3xl font-bold text-white">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.24em] text-red-400">Gestión del club</p>
+            <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
               Membresías
             </h1>
-            <p className="text-gray-400 text-sm mt-1">
-              {filteredMemberships.length} jugador{filteredMemberships.length !== 1 ? 'es' : ''}
+            <p className="mt-2 text-sm text-zinc-400">
+              {filteredMemberships.length} jugador{filteredMemberships.length !== 1 ? 'es' : ''} en el registro
             </p>
           </div>
           <Link
@@ -167,7 +168,7 @@ function MembershipPage() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

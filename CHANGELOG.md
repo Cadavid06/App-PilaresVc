@@ -95,6 +95,39 @@ Los valores económicos ya **no están hardcodeados** en el código. Nueva tabla
 
 ---
 
+## Bloque 3 — Identidad visual del frontend (14/09/2026)
+
+### Cambios realizados
+
+- Se renovó la identidad visual del frontend para alinearla con el logo del club: rojo, negro y blanco.
+- Se mejoró la jerarquía visual del acceso y del panel de membresías.
+- Se reforzaron navegación responsive, estados de foco accesibles, contraste y superficies tipo glass.
+
+### Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| Ninguno | Se trabajó sobre la estructura y estilos existentes. |
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `frontend/src/index.css` | Base visual, fondo, tipografía, scrollbar y foco accesible. |
+| `frontend/src/components/Navbar.jsx` | Navegación sticky con identidad del club y mejor espaciado responsive. |
+| `frontend/src/pages/LoginPage.jsx` | Rediseño de acceso con jerarquía de marca y superficies contrastadas. |
+| `frontend/src/pages/MembershipsPage.jsx` | Encabezado de gestión y estructura semántica del contenido. |
+
+### Acciones manuales
+
+- Ninguna. No se agregaron dependencias ni variables de entorno.
+
+### Verificaciones realizadas
+
+- Se intentó ejecutar `npm run build` en `frontend`, pero el entorno no tenía instaladas las dependencias (`vite: command not found`).
+
+---
+
 ## Bloque 2 — Roles Admin/Entrenador (14/09/2026)
 
 ### Reglas de negocio definidas (aprobadas por el cliente)
