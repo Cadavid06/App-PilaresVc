@@ -81,7 +81,7 @@ export default function MembershipsTable({
     <>
       <div className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700/50 rounded-2xl shadow-2xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-white">
+          <table className="w-full min-w-[720px] text-left text-white">
             <thead>
               <tr className="bg-gradient-to-r from-red-600/20 to-red-500/20 border-b border-red-500/30">
                 <th className="px-6 py-4 text-red-400 font-semibold text-sm uppercase tracking-wider">

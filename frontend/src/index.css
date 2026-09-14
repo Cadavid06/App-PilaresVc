@@ -11,6 +11,7 @@
 body {
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 8% 0%, rgba(220, 38, 38, 0.18), transparent 32rem),
     linear-gradient(135deg, #09090b 0%, #18181b 52%, #0f0f11 100%);
