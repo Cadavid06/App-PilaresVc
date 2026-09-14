@@ -470,6 +470,29 @@ El sistema calculaba deuda histórica como `meses × mensualidad actual`. Si el 
 
 ---
 
+## Bloque 7 — Fix: rutas de usuarios no montadas (14/09/2026)
+
+### Problema
+
+Al crear la gestión de usuarios (Bloque 2c), se renombró `admin.models` → `user.models` y se crearon `user.routes.js` y `user.controllers.js`, pero **nunca se montaron las rutas en `app.js`**. Por eso `/api/users` devolvía 404 y el frontend mostraba "Error al cargar usuarios".
+
+### Solución
+
+Se importó y montó `userRoutes` en `backend/src/app.js`.
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `backend/src/app.js` | Se agregó `import userRoutes` y `app.use("/api", userRoutes)` |
+
+### Verificaciones realizadas
+
+- `node --check` en `app.js`, `auth.controllers.js`, `user.controllers.js`.
+- Verificado que todos los imports usan `user.models.js` / modelo `User`.
+
+---
+
 ## Legado (anterior al Bloque 1)
 
 Registro git existente: migración de Mongo a PostgreSQL, cron inicial en Render, mejoras de estilos. No documentado formalmente.
