@@ -61,8 +61,8 @@ function MembershipPage() {
           </Link>
         </div>
 
-        <div className="bg-zinc-800/60 border border-zinc-700/50 rounded-xl p-4 mb-6">
-          <div className="flex flex-col sm:flex-row gap-3">
+        <div className="bg-zinc-800/60 border border-zinc-700/50 rounded-xl p-3 sm:p-4 mb-6">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <input
               type="text"
               placeholder="Buscar por nombre..."

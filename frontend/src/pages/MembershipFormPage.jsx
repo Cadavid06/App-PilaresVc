@@ -41,8 +41,8 @@ function MembershipFormPage() {
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center mb-5">
-      <div className="bg-black/30 backdrop-blur-xs border border-zinc-700/50 text-white rounded-2xl shadow-2xl w-full max-w-lg p-8 mx-4">
+    <div className="min-h-screen flex items-start justify-center px-3 py-4 sm:items-center sm:px-4 sm:py-8">
+      <div className="bg-black/30 backdrop-blur-xs border border-zinc-700/50 text-white rounded-2xl shadow-2xl w-full max-w-lg p-4 sm:p-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white mb-1">
             Registrar Membresía
@@ -270,7 +270,7 @@ function MembershipFormPage() {
           )}
 
           {/* Botones */}
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={() => navigate("/memberships")}

@@ -128,6 +128,43 @@ Los valores económicos ya **no están hardcodeados** en el código. Nueva tabla
 
 ---
 
+## Bloque 4 — Correcciones responsive para uso móvil (14/09/2026)
+
+### Cambios realizados
+
+- Se eliminó el panel negro extendido del navbar en pantallas pequeñas y se mantuvo una superficie compacta para logo y menú.
+- Se evitó el desbordamiento horizontal accidental de la aplicación.
+- Se ajustaron formularios, filtros, tablas y acciones para pantallas estrechas.
+- Las tablas conservan sus columnas mediante desplazamiento horizontal controlado, evitando romper la legibilidad.
+
+### Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| Ninguno | Se conservaron las extensiones y tecnologías existentes. |
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `frontend/src/components/Navbar.jsx` | Navbar compacto, sin fondo negro extendido, con separación segura para el área superior móvil. |
+| `frontend/src/index.css` | Prevención de overflow horizontal global. |
+| `frontend/src/pages/MembershipsPage.jsx` | Filtros con espaciado y apilamiento mobile-first. |
+| `frontend/src/components/MembershipsTable.jsx` | Ancho mínimo controlado para permitir scroll horizontal usable en móvil. |
+| `frontend/src/pages/UsersPage.jsx` | Tabla de usuarios protegida contra compresión y desbordamiento visual. |
+| `frontend/src/pages/MembershipFormPage.jsx` | Contenedor, padding y botones adaptados a pantallas pequeñas. |
+
+### Acciones manuales requeridas
+
+- Ninguna.
+
+### Verificaciones realizadas
+
+- Revisión de las vistas principales y componentes responsive del frontend.
+- Compilación del frontend pendiente de ejecutar tras estos cambios.
+
+---
+
 ## Bloque 2 — Roles Admin/Entrenador (14/09/2026)
 
 ### Reglas de negocio definidas (aprobadas por el cliente)
