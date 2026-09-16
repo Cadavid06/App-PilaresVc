@@ -7,6 +7,7 @@ import {
 import { X, Plus, Trash2, Users, AlertCircle } from "lucide-react";
 
 const TYPES = [
+  { value: "descuento_hermano", label: "Descuento hermano", color: "text-green-400" },
   { value: "penalidad", label: "Penalidad", color: "text-red-400" },
   { value: "colaboracion", label: "Colaboración", color: "text-blue-400" },
   { value: "manual", label: "Manual", color: "text-yellow-400" },
