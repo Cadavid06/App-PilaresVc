@@ -9,6 +9,7 @@ import {
   delateMembershipRequest,
 } from "../api/memberships";
 import { getSettingsRequest, updateSettingsRequest } from "../api/settings";
+import { useAuth } from "./AuthContext";
 
 const DEFAULT_SETTINGS = {
   monthlyFee: 20000,
@@ -30,6 +31,7 @@ export const MembershipProvider = ({ children }) => {
   const [membership, setMembership] = useState([]);
   const [errors, setErrors] = useState();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (errors !== "") {
@@ -47,11 +49,18 @@ export const MembershipProvider = ({ children }) => {
         const res = await getSettingsRequest();
         setSettings(res.data);
       } catch (error) {
-        console.error("Error loading settings:", error);
+        // Ignoramos el log de error si es solo que no hay sesión, 
+        // porque el interceptor o backend ya devuelven 401.
+        if (error.response?.status !== 401) {
+          console.error("Error loading settings:", error);
+        }
       }
     };
-    loadSettings();
-  }, []);
+
+    if (isAuthenticated) {
+      loadSettings();
+    }
+  }, [isAuthenticated]);
 
   const updateSettings = async (data) => {
     try {

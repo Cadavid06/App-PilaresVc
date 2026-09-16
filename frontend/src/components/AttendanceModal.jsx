@@ -18,6 +18,7 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
   
   const { adjustDebt, errors: membershipErrors, settings } = useMembership();
   const [successMsg, setSuccessMsg] = useState("");
+  const [localError, setLocalError] = useState("");
 
   const actualId = membership?.id || membership?._id;
   const currentDebt = membership?.deuda || 0;
@@ -25,17 +26,21 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
 
   const watchedAmount = watch("amountToForgive") || 0;
   const projectedDebt = Math.max(0, currentDebt - Number(watchedAmount));
+  const maxAllowed = Math.max(0, currentDebt - monthlyFee);
+  const canForgive = maxAllowed > 0;
 
   useEffect(() => {
     if (isOpen) {
       reset({ amountToForgive: 0 });
       setSuccessMsg("");
+      setLocalError("");
     }
   }, [isOpen, reset]);
 
   const onSubmit = async (data) => {
     try {
       setSuccessMsg("");
+      setLocalError("");
       const payload = {
         amountToForgive: parseFloat(data.amountToForgive) || 0,
       };
@@ -45,10 +50,11 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
       
       setTimeout(() => {
         onClose();
-      }, 2000);
+      }, 1500);
 
     } catch (error) {
       console.error(error);
+      setLocalError(error.response?.data?.message || "Hubo un error al ajustar la deuda.");
     }
   };
 
@@ -80,28 +86,41 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
           </p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Monto a condonar (por inasistencia)
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-indigo-400 font-bold">$</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="1000"
-                  placeholder="0"
-                  {...register("amountToForgive", { 
-                    required: "Especifica el monto a condonar",
-                    min: { value: 0, message: "No puede ser menor a 0" },
-                  })}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-xl pl-8 pr-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                />
+            {!canForgive ? (
+              <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl mb-4">
+                <p className="text-yellow-400 text-sm flex items-start gap-2">
+                  <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+                  <span>
+                    No hay deuda condonable. La deuda actual es <strong>${currentDebt.toLocaleString()}</strong>, pero el sistema no permite condonar el mes en curso (mensualidad de ${monthlyFee.toLocaleString()}).
+                  </span>
+                </p>
               </div>
-              <p className="text-xs text-gray-400 mt-2">
-                Máximo permitido: <strong>${(currentDebt - monthlyFee).toLocaleString()}</strong> (el mes actual no se condona).
-              </p>
-            </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Monto a condonar (por inasistencia)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-indigo-400 font-bold">$</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max={maxAllowed}
+                    step="1000"
+                    placeholder="0"
+                    {...register("amountToForgive", { 
+                      required: "Especifica el monto a condonar",
+                      min: { value: 0, message: "No puede ser menor a 0" },
+                      max: { value: maxAllowed, message: `No puede superar el máximo permitido de $${maxAllowed.toLocaleString()}` }
+                    })}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl pl-8 pr-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  Máximo permitido: <strong>${maxAllowed.toLocaleString()}</strong> (el mes actual no se condona).
+                </p>
+              </div>
+            )}
 
             <div className="bg-black/30 border border-zinc-800 rounded-xl p-4 flex justify-between items-center">
               <span className="text-sm text-gray-400">Deuda Restante Tras Ajuste:</span>
@@ -114,13 +133,13 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
               </p>
             ) : null}
             
-            {membershipErrors && (
+            {(membershipErrors || localError) && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
                 <p className="text-red-400 text-sm flex gap-2 items-center">
                   <AlertCircle size={16} />
-                  {Array.isArray(membershipErrors)
+                  {localError || (Array.isArray(membershipErrors)
                     ? membershipErrors.join(", ")
-                    : membershipErrors.message || membershipErrors}
+                    : membershipErrors.message || membershipErrors)}
                 </p>
               </div>
             )}
@@ -137,7 +156,12 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
             <div className="pt-2">
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-all duration-200"
+                disabled={!canForgive}
+                className={`w-full py-3 rounded-xl text-white font-semibold transition-all duration-200 ${
+                  canForgive 
+                    ? "bg-indigo-600 hover:bg-indigo-700" 
+                    : "bg-zinc-700 cursor-not-allowed opacity-50"
+                }`}
               >
                 Condonar Deuda
               </button>

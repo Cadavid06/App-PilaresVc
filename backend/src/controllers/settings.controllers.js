@@ -3,7 +3,7 @@ import { getSettings, SETTINGS_ID } from "../services/billing.service.js";
 
 const parsePositiveFee = (value, fallback) => {
   const parsed = parseFloat(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  if (!Number.isFinite(parsed) || parsed < 0) return fallback;
   return parsed;
 };
 

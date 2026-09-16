@@ -4,6 +4,30 @@ Todas las modificaciones relevantes del proyecto quedan documentadas aquí, agru
 
 ---
 
+## Bloque 11 — Fixes de QA en Producción (16/09/2026)
+
+### Problemas resueltos
+
+- **Configuración de Descuento en $0:** Se corrigió un bug lógico (`parsed <= 0`) en `settings.controllers.js` que impedía guardar un descuento por hermano de 0, manteniendo erróneamente el valor anterior.
+- **Race Condition (HTTP 401):** El frontend (`MembershipContext`) intentaba cargar las configuraciones antes de comprobar si el usuario estaba logueado. Ahora consume `isAuthenticated` para hacer la petición de manera segura.
+- **Sincronización de Modales:** Los modales de Pagos, Actualización, Condonación y Ajustes quedaban desactualizados después de ejecutar una acción porque conservaban un "snapshot" de la tabla. Ahora su estado es reactivo (buscan activamente la versión más reciente en el contexto).
+- **Formatos y Mensajes en Modales:**
+  - El modal de pagos ya no muestra un signo negativo antes del "Total pagado".
+  - Se agregó manejo explícito de errores con estados locales, permitiendo al usuario ver de inmediato los mensajes de error del backend (HTTP 400).
+  - El modal de "Ajustar Deuda" ahora desactiva el botón y oculta el input de condonación si el jugador solo debe el mes en curso (o $0), explicando visualmente que el mes actual no es condonable.
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `backend/src/controllers/settings.controllers.js` | Modificada validación en `parsePositiveFee` a `parsed < 0`. |
+| `frontend/src/context/MembershipContext.jsx` | Agregada dependencia `isAuthenticated` para `loadSettings`. |
+| `frontend/src/components/MembershipsTable.jsx` | Pase de estados derivados (`membership.find`) a los modales. Botón condonar deshabilitado dinámicamente. |
+| `frontend/src/components/PaymentsModals.jsx` | Limpieza de signo negativo. Reseteo de form y mensajes locales de éxito/error. |
+| `frontend/src/components/AttendanceModal.jsx` | Lógica de `maxAllowed > 0`. Mensaje visual para deudas no condonables. |
+
+---
+
 ## Bloque 10 — Correcciones de QA y Usabilidad Móvil (16/09/2026)
 
 ### Correcciones implementadas

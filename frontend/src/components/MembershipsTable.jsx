@@ -23,7 +23,7 @@ export default function MembershipsTable({
   currentPage,
   itemsPerPage,
 }) {
-  const { getMembershipById, deleteMembership } = useMembership();
+  const { getMembershipById, deleteMembership, settings } = useMembership();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const [expandedRow, setExpandedRow] = useState(null);
@@ -223,10 +223,18 @@ export default function MembershipsTable({
                                 <span className="hidden sm:inline">Pagar</span>
                               </button>
                               <button
-                                onClick={(e) => { e.stopPropagation(); markAttendance(m); }}
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  if (m.deuda > (settings?.monthlyFee || 20000)) markAttendance(m); 
+                                }}
                                 aria-label="Ajustar deuda por inasistencia"
                                 title="Ajustar deuda por inasistencia"
-                                className="flex items-center gap-1 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-400 px-3 py-2 sm:px-2 sm:py-1 rounded-lg transition-all duration-200 font-medium text-sm"
+                                disabled={m.deuda <= (settings?.monthlyFee || 20000)}
+                                className={`flex items-center gap-1 border px-3 py-2 sm:px-2 sm:py-1 rounded-lg transition-all duration-200 font-medium text-sm ${
+                                  m.deuda > (settings?.monthlyFee || 20000)
+                                    ? "bg-indigo-500/20 hover:bg-indigo-500/30 border-indigo-500/30 text-indigo-400"
+                                    : "bg-zinc-700/20 border-zinc-700/30 text-gray-500 cursor-not-allowed opacity-50"
+                                }`}
                               >
                                 <Calendar size={16} className="sm:w-[14px] sm:h-[14px]" />
                                 <span className="hidden sm:inline">Ajustar Deuda</span>
@@ -274,14 +282,14 @@ export default function MembershipsTable({
         key={`update-${update?.id || update?._id}`}
         isOpen={isModalOpenUpdate}
         onClose={() => setIsModalOpenUpdate(false)}
-        membership={update}
+        membership={membership.find((m) => (m.id || m._id) === (update?.id || update?._id)) || update}
       />
       {/* Modal para pagos */}
       <PaymentsModals
         key={`payments-${payments?.id || payments?._id}`}
         isOpen={isModalOpenPayments}
         onClose={() => setisModalOpenPayments(false)}
-        membership={payments}
+        membership={membership.find((m) => (m.id || m._id) === (payments?.id || payments?._id)) || payments}
       />
       {/* Modal para eliminar */}
       <ConfirmModal
@@ -295,14 +303,14 @@ export default function MembershipsTable({
         key={`attendance-${attendance?.id || attendance?._id}`}
         isOpen={isModalOpenAttendance}
         onClose={() => setIsModalOpenAttendance(false)}
-        membership={attendance}
+        membership={membership.find((m) => (m.id || m._id) === (attendance?.id || attendance?._id)) || attendance}
       />
       {/* Modal de ajustes de cobro */}
       <AdjustmentsModal
         key={`adjustments-${adjustments?.id || adjustments?._id}`}
         isOpen={isModalOpenAdjustments}
         onClose={() => setIsModalOpenAdjustments(false)}
-        membership={adjustments}
+        membership={membership.find((m) => (m.id || m._id) === (adjustments?.id || adjustments?._id)) || adjustments}
       />
     </>
   );

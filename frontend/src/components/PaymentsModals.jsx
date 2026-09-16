@@ -1,15 +1,27 @@
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMembership } from "../context/MembershipContext";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function PaymentsModals({ isOpen, onClose, membership }) {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm();
 
   const { addPayments, errors: membershipErrors, settings } = useMembership();
+  const [localSuccess, setLocalSuccess] = useState("");
+  const [localError, setLocalError] = useState("");
+
+  useEffect(() => {
+    if (isOpen) {
+      reset({ amount: "" });
+      setLocalSuccess("");
+      setLocalError("");
+    }
+  }, [isOpen, reset]);
 
   if (!isOpen || !membership) return null;
 
@@ -24,11 +36,17 @@ export default function PaymentsModals({ isOpen, onClose, membership }) {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
+      setLocalSuccess("");
+      setLocalError("");
       const actualId = membership.id || membership._id;
-      await addPayments(actualId, data);
-      onClose();
+      await addPayments(actualId, data.amount);
+      setLocalSuccess("¡Pago registrado correctamente!");
+      setTimeout(() => {
+        onClose();
+      }, 1500);
     } catch (error) {
       console.error("Error en modal:", error);
+      setLocalError(error.response?.data?.message || "Hubo un error al procesar el pago.");
     }
   });
 
@@ -79,7 +97,7 @@ export default function PaymentsModals({ isOpen, onClose, membership }) {
               )}
               <div className="flex justify-between items-center">
                 <span className="text-gray-300 text-sm">Total pagado:</span>
-                <span className="text-gray-400 text-sm">-${totalPaid.toLocaleString()}</span>
+                <span className="text-gray-400 text-sm">${totalPaid.toLocaleString()}</span>
               </div>
               <div className="border-t border-zinc-600/30 pt-2 flex justify-between items-center">
                 <span className="text-white font-semibold">Deuda actual:</span>
@@ -102,9 +120,21 @@ export default function PaymentsModals({ isOpen, onClose, membership }) {
             </div>
           )}
 
-          {membershipErrors && (
+          {(membershipErrors || localError) && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6">
-              <p className="text-red-400 text-sm">{membershipErrors.message}</p>
+              <p className="text-red-400 text-sm flex gap-2 items-center">
+                <AlertCircle size={16} />
+                {localError || (Array.isArray(membershipErrors) ? membershipErrors.join(", ") : membershipErrors.message || membershipErrors)}
+              </p>
+            </div>
+          )}
+
+          {localSuccess && (
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 mb-6">
+              <p className="text-emerald-400 text-sm flex gap-2 items-center">
+                <CheckCircle size={16} />
+                {localSuccess}
+              </p>
             </div>
           )}
 
