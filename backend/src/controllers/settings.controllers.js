@@ -1,5 +1,5 @@
 import Setting from "../models/settings.models.js";
-import { getSettings } from "../services/billing.service.js";
+import { getSettings, SETTINGS_ID } from "../services/billing.service.js";
 
 const parsePositiveFee = (value, fallback) => {
   const parsed = parseFloat(value);
@@ -25,7 +25,7 @@ export const updateSettings = async (req, res) => {
     const reactivationFee = parsePositiveFee(req.body.reactivationFee, current.reactivationFee);
 
     const [setting] = await Setting.findOrCreate({
-      where: { id: 1 },
+      where: { id: SETTINGS_ID },
       defaults: current,
     });
 

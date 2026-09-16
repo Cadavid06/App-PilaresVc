@@ -5,9 +5,9 @@ const Setting = sequelize.define(
   "Setting",
   {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
-      autoIncrement: true,
     },
     monthlyFee: {
       type: DataTypes.FLOAT,
@@ -25,7 +25,7 @@ const Setting = sequelize.define(
       defaultValue: 20000,
     },
     updatedBy: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: true,
     },
   },

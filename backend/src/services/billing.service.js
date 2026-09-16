@@ -8,6 +8,10 @@ const DEFAULTS = {
   reactivationFee: 20000,
 };
 
+// ID fijo de la fila de configuración (los UUID no son autoincrementales).
+// Debe coincidir con el UUID asignado en la migración pgAdmin (bk/sql/uuids-...).
+export const SETTINGS_ID = "00000000-0000-4000-8000-000000000001";
+
 // ─── Helpers de fecha (trabajan con strings DATEONLY de la DB) ──────────────
 function parseDateOnly(v) {
   if (!v) return null;
@@ -30,7 +34,7 @@ function toDate(y, m, d) {
 // ─── Settings ──────────────────────────────────────────────────────────────
 export async function getSettings() {
   const [row] = await Setting.findOrCreate({
-    where: { id: 1 },
+    where: { id: SETTINGS_ID },
     defaults: DEFAULTS,
   });
   return {

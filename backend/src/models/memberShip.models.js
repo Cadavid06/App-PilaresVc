@@ -6,9 +6,9 @@ const MemberShip = sequelize.define(
   "MemberShip",
   {
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
-      autoIncrement: true,
     },
     clientName:     { type: DataTypes.STRING,  allowNull: false },
     documentType:   { type: DataTypes.ENUM("TI", "CC", "CE"), allowNull: false },
@@ -34,7 +34,7 @@ const MemberShip = sequelize.define(
       allowNull: true,
     },
     userId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: { model: User, key: "id" },
     },
@@ -45,13 +45,13 @@ const MemberShip = sequelize.define(
 const Payment = sequelize.define(
   "Payment",
   {
-    id:     { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    id:     { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
     amount: { type: DataTypes.FLOAT,   allowNull: false },
     date:   { type: DataTypes.DATE,    defaultValue: DataTypes.NOW },
     month:  { type: DataTypes.INTEGER },
     year:   { type: DataTypes.INTEGER },
     memberShipId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: { model: MemberShip, key: "id" },
       onDelete: "CASCADE",

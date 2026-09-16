@@ -530,6 +530,44 @@ Se importó y montó `userRoutes` en `backend/src/app.js`.
 
 ---
 
+## Bloque 8 — IDs enteros → UUID (14/09/2026)
+
+### Cambio estructural
+
+Cambio de los IDs numéricos autoincrementales a **UUID (v4)** en las 4 tablas: `users`, `memberships`, `payments` y `settings`. Se preservan todos los datos y relaciones. Además se **elimina la tabla legada `attendances`** (3 filas, sin uso en el código actual).
+
+Motivo: los UUID evitan enumerar registros por ID (ajuste de seguridad) y facilitan futuras integraciones.
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `backend/src/models/user.models.js` | `id` pasa de `INTEGER autoIncrement` a `UUID UuidV4` |
+| `backend/src/models/settings.models.js` | `id` → UUID; `updatedBy` pasa de `INTEGER` a `UUID` |
+| `backend/src/models/memberShip.models.js` | `id` de `MemberShip` y `Payment` → UUID; `userId` y `memberShipId` (FK) → UUID |
+| `backend/src/services/billing.service.js` | Nuevo `SETTINGS_ID` (UUID fijo `00000000-0000-4000-8000-000000000001`); `findOrCreate settings` usa ese constante |
+| `backend/src/controllers/settings.controllers.js` | `findOrCreate settings` usa `SETTINGS_ID` |
+
+### Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `backend/migrations/2026-09-14_ids_a_uuid.sql` | Script migratorio para pgAdmin (transaccional, conserva datos y FKs) |
+
+### Acciones manuales requeridas (usuario)
+
+1. Ejecutar **`backend/migrations/2026-09-14_ids_a_uuid.sql`** completo en pgAdmin (BD de Neon). El script además borra la tabla `attendances`.
+2. Desplegar el backend actualizado (los modelos nuevos son compatibles con el esquema migrado; `sequelize.sync({force:false})` no re-altera nada).
+3. La tabla `admins` quedó como legado vacío en la BD y no la toca la migración; se puede borrar con `DROP TABLE IF EXISTS "admins";` si se desea.
+
+### Verificaciones realizadas
+
+- `node --check` en todos los modelos y servicios modificados.
+- Smoke test de imports (`app.js` carga modelos/controllers sin errores).
+- Build de producción del frontend exitoso (el frontend usa IDs como strings; no se requirió cambio).
+
+---
+
 ## Legado (anterior al Bloque 1)
 
 Registro git existente: migración de Mongo a PostgreSQL, cron inicial en Render, mejoras de estilos. No documentado formalmente.

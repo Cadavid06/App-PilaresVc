@@ -409,7 +409,7 @@ export const deleteMembership = async (req, res) => {
     if (!member) return res.status(404).json({ message: "Membresía no encontrada" });
 
     const plain = toPlain(member);
-    await member.destroy(); // cascade borra payments y attendances
+    await member.destroy(); // cascade borra payments
     res.json(plain);
   } catch (error) {
     console.error(error);
