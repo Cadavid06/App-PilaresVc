@@ -217,7 +217,7 @@ export default function MembershipsTable({
                                 }}
                                 aria-label="Ajustar deuda por inasistencia"
                                 title={m.deuda > (settings?.monthlyFee || 20000) ? "Ajustar deuda por inasistencia" : "No hay deuda condonable (el mes actual no se puede condonar)"}
-                                disabled={m.deuda <= (settings?.monthlyFee || 20000)}
+                                // disabled={m.deuda <= (settings?.monthlyFee || 20000)}
                                 className={`flex items-center gap-1 border px-3 py-2 sm:px-2 sm:py-1 rounded-lg transition-all duration-200 font-medium text-sm ${
                                   m.deuda > (settings?.monthlyFee || 20000)
                                     ? "bg-indigo-500/20 hover:bg-indigo-500/30 border-indigo-500/30 text-indigo-400"

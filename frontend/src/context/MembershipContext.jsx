@@ -31,6 +31,7 @@ export const MembershipProvider = ({ children }) => {
   const [membership, setMembership] = useState([]);
   const [errors, setErrors] = useState();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [isLoading, setIsLoading] = useState(true);
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -89,11 +90,14 @@ export const MembershipProvider = ({ children }) => {
 
   const getMemberships = async () => {
     try {
+      setIsLoading(true);
       const res = await getMembershipsRequest();
       setMembership(res.data);
     } catch (error) {
       console.error(error);
       setErrors(error.response?.data || ["Unexpected error"]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -183,6 +187,7 @@ export const MembershipProvider = ({ children }) => {
         membership,
         errors,
         settings,
+        isLoading,
         updateSettings,
       }}
     >

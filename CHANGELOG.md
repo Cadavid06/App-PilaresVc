@@ -3,6 +3,29 @@
 Todas las modificaciones relevantes del proyecto quedan documentadas aquí, agrupadas por bloque/versión.
 
 ---
+## Bloque 13 — Ajustes Finales y Permisos (16/09/2026)
+
+### Problemas resueltos
+
+- **Acceso no autorizado de Entrenadores (Crítica):** Los entrenadores podían acceder a las pantallas de Configuración, Usuarios y Registro de administradores ingresando directamente por URL. Se creó un nuevo componente `AdminRoute` que restringe el acceso a estas rutas asegurando que `user.role === 'admin'`.
+- **Actualización de nombre no persistía (Alta):** El modal de edición individual carecía de la limpieza de caracteres `onInput` presente en otros formularios, lo que causaba silenciosas fallas de guardado o inconsistencias. Se añadió sanitización dinámica para el nombre (`[A-Za-zÁ-ÿ\s]`), documento y teléfono en `UpdateModals.jsx`.
+- **Tooltips deshabilitados nativamente (Media):** En HTML, un botón con la propiedad `disabled={true}` bloquea los eventos del mouse (hover), impidiendo que el navegador muestre el tooltip de ayuda (`title`). Se reemplazó el atributo nativo por clases CSS que simulan el botón apagado, permitiendo que el cursor pase y muestre el motivo de la deshabilitación.
+- **Flicker de "0 resultados" al cargar (Media):** Al refrescar la página, el sistema mostraba "0 jugadores" o "No hay usuarios registrados" por unos instantes antes de cargar la información del servidor. Se implementó un estado global `isLoading` en `MembershipContext` y local en `UsersPage`, mostrando un spinner adecuado durante las peticiones.
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `frontend/src/AdminRoute.jsx` | [NUEVO] Componente de protección estricta por rol. |
+| `frontend/src/App.jsx` | Modificado para usar `AdminRoute` en `/settings`, `/users` y `/register`. |
+| `frontend/src/components/UpdateModals.jsx` | Añadida sanitización `onInput` a los campos de texto. |
+| `frontend/src/components/MembershipsTable.jsx` | Removido `disabled` nativo en botón "Ajustar Deuda". |
+| `frontend/src/context/MembershipContext.jsx` | Agregado estado `isLoading` y su lógica. |
+| `frontend/src/pages/MembershipsPage.jsx` | Agregado renderizado condicional del spinner de carga. |
+| `frontend/src/pages/UsersPage.jsx` | Agregado renderizado condicional del spinner de carga. |
+
+---
+
 ## Bloque 12 — Correcciones de QA Final en Producción (16/09/2026)
 
 ### Problemas resueltos

@@ -5,7 +5,7 @@ import MembershipsTable from "../components/MembershipsTable";
 import { useMembership } from "../context/MembershipContext";
 
 function MembershipPage() {
-  const { membership, getMemberships } = useMembership();
+  const { getMemberships, membership, isLoading } = useMembership();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterGender, setFilterGender] = useState("all");
@@ -119,7 +119,12 @@ function MembershipPage() {
         </div>
 
         <div className="grid gap-4">
-          {currentMemberships.length === 0 ? (
+          {isLoading ? (
+            <div className="bg-zinc-800/60 border border-zinc-700/50 p-12 rounded-xl text-center flex flex-col items-center justify-center gap-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+              <p className="text-gray-400">Cargando membresías...</p>
+            </div>
+          ) : currentMemberships.length === 0 ? (
             <div className="bg-zinc-800/60 border border-zinc-700/50 p-12 rounded-xl text-center">
               <p className="text-gray-400">
                 No se encontraron membresías con estos filtros

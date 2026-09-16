@@ -7,6 +7,7 @@ import SettingsPage from "./pages/SettingsPage";
 import UsersPage from "./pages/UsersPage";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoutes from "./ProtectedRoutes";
+import AdminRoute from "./AdminRoute";
 import { MembershipProvider } from "./context/MembershipContext";
 import Navbar from "./components/Navbar";
 
@@ -21,10 +22,13 @@ function App() {
             
 
             <Route element={<ProtectedRoutes />}>
-              <Route path="/register" element={<RegisterPage />} />
               <Route path="/memberships" element={<MemberShipsPage />} />
               <Route path="/add-memberships" element={<MembershipFormPage />} />
               <Route path="/membership/:id" element={<MembershipFormPage />} />
+            </Route>
+
+            <Route element={<AdminRoute />}>
+              <Route path="/register" element={<RegisterPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/users" element={<UsersPage />} />
             </Route>

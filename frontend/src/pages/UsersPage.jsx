@@ -17,12 +17,17 @@ function UsersPage() {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [successMsg, setSuccessMsg] = useState("");
 
+  const [isLoading, setIsLoading] = useState(true);
+
   const loadUsers = async () => {
     try {
+      setIsLoading(true);
       const res = await getUsersRequest();
       setUsers(res.data);
     } catch (err) {
       setErrors(err.response?.data?.message || "Error al cargar usuarios");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -128,7 +133,23 @@ function UsersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-700/50">
-                {users.map((u) => {
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-8 text-center text-gray-400">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <RefreshCw className="animate-spin text-red-500" size={24} />
+                        <p>Cargando usuarios...</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : users.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-8 text-center text-gray-400">
+                      No hay usuarios registrados
+                    </td>
+                  </tr>
+                ) : (
+                  users.map((u) => {
                   const isSelf = u.id === currentUser?.id;
                   const adminCount = users.filter((x) => x.role === "admin").length;
                   const canDelete =
@@ -203,7 +224,7 @@ function UsersPage() {
                       </td>
                     </tr>
                   );
-                })}
+                }))}
               </tbody>
             </table>
           </div>

@@ -94,6 +94,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               name="clientName"
               value={formData.clientName}
               onChange={handleChange}
+              onInput={(e) => (e.target.value = e.target.value.replace(/[^A-Za-zÁ-ÿ\s]/g, ""))}
               className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
               required
             />
@@ -126,6 +127,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               name="clientDocument"
               value={formData.clientDocument}
               onChange={handleChange}
+              onInput={(e) => (e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, ""))}
               className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
               required
             />
@@ -140,6 +142,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               name="clientPhone"
               value={formData.clientPhone}
               onChange={handleChange}
+              onInput={(e) => (e.target.value = e.target.value.replace(/[^0-9+]/g, ""))}
               className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
               required
             />
