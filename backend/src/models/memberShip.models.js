@@ -29,14 +29,23 @@ const MemberShip = sequelize.define(
       type: DataTypes.FLOAT,
       defaultValue: 0,
     },
+    totalAdjustments: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
     nextBillingDate: {
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
     siblingDiscount: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.FLOAT,
       allowNull: false,
-      defaultValue: false,
+      defaultValue: 0,
+      validate: { min: 0 },
+    },
+    familyId: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     userId: {
       type: DataTypes.INTEGER,

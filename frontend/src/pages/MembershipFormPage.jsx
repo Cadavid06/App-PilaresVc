@@ -16,10 +16,8 @@ function MembershipFormPage() {
   const [isNewPlayer, setIsNewPlayer] = useState(true);
 
   const debtAmount = watch("debtAmount") || 0;
-  const siblingDiscount = watch("siblingDiscount");
-  const monthlyFee = siblingDiscount
-    ? (settings?.siblingMonthlyFee || settings?.monthlyFee || 20000)
-    : (settings?.monthlyFee || 20000);
+  const siblingDiscount = Number(watch("siblingDiscount") || 0);
+  const monthlyFee = Math.max(0, (settings?.monthlyFee || 20000) - siblingDiscount);
   const inscriptionFee = settings?.inscriptionFee || 15000;
 
   // Total = deuda que digita el admin + mes actual (automático)
@@ -102,17 +100,27 @@ function MembershipFormPage() {
               </p>
             )}
 
-            <label className="flex items-start gap-3 mt-4 cursor-pointer">
-              <input
-                type="checkbox"
-                {...register("siblingDiscount")}
-                className="mt-1 h-4 w-4 accent-red-500"
-              />
-              <span className="text-sm text-gray-300">
-                Aplicar tarifa de hermanos
-                <span className="block text-xs text-gray-500">Usa la tarifa familiar definida en Configuración.</span>
-              </span>
-            </label>
+            <div className="grid gap-3 mt-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm text-gray-300 mb-1">ID familiar</label>
+                <input
+                  type="text"
+                  placeholder="Ej: FAMILIA-GOMEZ"
+                  {...register("familyId")}
+                  className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-3 py-2 text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-300 mb-1">Descuento hermanos (COP)</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="500"
+                  {...register("siblingDiscount", { valueAsNumber: true, min: { value: 0, message: "No puede ser negativo" } })}
+                  className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-3 py-2 text-white"
+                />
+              </div>
+            </div>
 
             {/* Resumen de cobro */}
             <div className="mt-3 bg-zinc-700/40 rounded-lg p-3 border border-zinc-600/30">

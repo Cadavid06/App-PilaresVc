@@ -9,15 +9,17 @@ Todas las modificaciones relevantes del proyecto quedan documentadas aquí, agru
 ### Cambios realizados
 
 - Se formalizó el registro de jugadores antiguos: la deuda histórica digitada y la mensualidad actual se conservan como componentes separados del total esperado; el abono inicial se registra como pago independiente y determina el estado resultante.
-- Se añadió una tarifa mensual configurable para hermanos y una marca por jugador para aplicar dicha tarifa, manteniendo la libertad del admin para cambiar el valor desde Configuración.
+- Se reemplazó la tarifa fija de hermanos por `familyId` + descuento monetario por jugador, calculado como mensualidad base menos descuento.
+- Se incorporó `billing_adjustments` como libro financiero con UUID, ciclo `YYYY-MM`, tipo, motivo, usuario y monto firmado.
+- Los descuentos y condonaciones se reflejan en `totalAdjustments`, sin reescribir la tarifa base ni perder el historial.
 - Se validan en backend y frontend los importes no negativos y los caracteres de nombre, documento y teléfono.
-- Las condonaciones ahora exigen motivo y se registran en `debt_adjustments` con monto firmado, usuario, fecha y jugador para trazabilidad.
+- Las condonaciones ahora exigen motivo y quedan auditadas por ciclo.
 
 ### Archivos creados
 
 | Archivo | Descripción |
 |---------|-------------|
-| `backend/src/models/debtAdjustment.models.js` | Historial auditable de condonaciones/ajustes de deuda. |
+| `backend/src/models/billingAdjustment.models.js` | Libro financiero UUID de ajustes por ciclo y tipo. |
 
 ### Archivos modificados
 

@@ -14,7 +14,7 @@ export default function PaymentsModals({ isOpen, onClose, membership }) {
   if (!isOpen || !membership) return null;
 
   const currentDebt = membership.deuda || 0;
-  const monthlyFee = settings?.monthlyFee || 20000;
+  const monthlyFee = Math.max(0, (settings?.monthlyFee || 20000) - (Number(membership.siblingDiscount) || 0));
   const isExpired = membership.status === "Expirada";
   const hasLongDebt = currentDebt >= 6 * monthlyFee;
 

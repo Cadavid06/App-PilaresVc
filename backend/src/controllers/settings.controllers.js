@@ -1,9 +1,9 @@
 import Setting from "../models/settings.models.js";
 import { getSettings } from "../services/billing.service.js";
 
-const parsePositiveFee = (value, fallback) => {
+const parseNonNegativeFee = (value, fallback) => {
   const parsed = parseFloat(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  if (!Number.isFinite(parsed) || parsed < 0) return fallback;
   return parsed;
 };
 
@@ -20,10 +20,10 @@ export const getSettingsController = async (req, res) => {
 export const updateSettings = async (req, res) => {
   try {
     const current = await getSettings();
-    const monthlyFee = parsePositiveFee(req.body.monthlyFee, current.monthlyFee);
-    const inscriptionFee = parsePositiveFee(req.body.inscriptionFee, current.inscriptionFee);
-    const reactivationFee = parsePositiveFee(req.body.reactivationFee, current.reactivationFee);
-    const siblingMonthlyFee = parsePositiveFee(req.body.siblingMonthlyFee, current.siblingMonthlyFee);
+    const monthlyFee = parseNonNegativeFee(req.body.monthlyFee, current.monthlyFee);
+    const inscriptionFee = parseNonNegativeFee(req.body.inscriptionFee, current.inscriptionFee);
+    const reactivationFee = parseNonNegativeFee(req.body.reactivationFee, current.reactivationFee);
+    const defaultSiblingDiscount = parseNonNegativeFee(req.body.defaultSiblingDiscount, current.defaultSiblingDiscount);
 
     const [setting] = await Setting.findOrCreate({
       where: { id: 1 },
@@ -34,7 +34,7 @@ export const updateSettings = async (req, res) => {
       monthlyFee,
       inscriptionFee,
       reactivationFee,
-      siblingMonthlyFee,
+      defaultSiblingDiscount,
       updatedBy: req.user.id,
     });
 
@@ -42,7 +42,7 @@ export const updateSettings = async (req, res) => {
       monthlyFee: setting.monthlyFee,
       inscriptionFee: setting.inscriptionFee,
       reactivationFee: setting.reactivationFee,
-      siblingMonthlyFee: setting.siblingMonthlyFee,
+      defaultSiblingDiscount: setting.defaultSiblingDiscount,
     });
   } catch (error) {
     console.error(error);

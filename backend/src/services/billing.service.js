@@ -1,12 +1,13 @@
 import { Op } from "sequelize";
 import Setting from "../models/settings.models.js";
 import { MemberShip } from "../models/memberShip.models.js";
+import BillingAdjustment from "../models/billingAdjustment.models.js";
 
 const DEFAULTS = {
   monthlyFee: 20000,
   inscriptionFee: 15000,
   reactivationFee: 20000,
-  siblingMonthlyFee: 25000,
+  defaultSiblingDiscount: 5000,
 };
 
 // ─── Helpers de fecha (trabajan con strings DATEONLY de la DB) ──────────────
@@ -38,13 +39,13 @@ export async function getSettings() {
     monthlyFee: row.monthlyFee,
     inscriptionFee: row.inscriptionFee,
     reactivationFee: row.reactivationFee,
-    siblingMonthlyFee: row.siblingMonthlyFee,
+    defaultSiblingDiscount: row.defaultSiblingDiscount,
   };
 }
 
 // ─── Cálculo de deuda ──────────────────────────────────────────────────────
 export function calcDeuda(plain) {
-  return Math.max(0, (plain.totalFeeExpected || 0) - (plain.totalPaid || 0));
+  return Math.max(0, (plain.totalFeeExpected || 0) + (plain.totalAdjustments || 0) - (plain.totalPaid || 0));
 }
 
 // ─── Estado basado en reglas de negocio ────────────────────────────────────
@@ -74,13 +75,24 @@ export async function applyBillingIfDue(member, settings) {
 
   let billed = 0;
   let cursor = current;
+  let totalAdjustments = Number(member.totalAdjustments || 0);
   const MAX_CATCH_UP = 60;
 
   while (cursor.key <= todayKey && billed < MAX_CATCH_UP) {
-    const monthlyCharge = member.siblingDiscount
-      ? settings.siblingMonthlyFee
-      : settings.monthlyFee;
-    member.totalFeeExpected += monthlyCharge;
+    member.totalFeeExpected += settings.monthlyFee;
+    const siblingDiscount = Math.max(0, Number(member.siblingDiscount || 0));
+    if (siblingDiscount > 0) {
+      totalAdjustments -= siblingDiscount;
+      await BillingAdjustment.create({
+        cycle: `${cursor.y}-${String(cursor.m).padStart(2, "0")}`,
+        type: "sibling_discount",
+        amount: -siblingDiscount,
+        reason: "Descuento de hermanos",
+        memberShipId: member.id,
+        familyId: member.familyId,
+        userId: member.userId,
+      });
+    }
     cursor = nextMonthFirst(cursor);
     billed++;
   }
@@ -90,13 +102,15 @@ export async function applyBillingIfDue(member, settings) {
   const newNext = toDate(cursor.y, cursor.m, cursor.d);
   const deuda = calcDeuda({
     totalFeeExpected: member.totalFeeExpected,
+    totalAdjustments,
     totalPaid: member.totalPaid,
   });
-  const monthlyFee = member.siblingDiscount ? settings.siblingMonthlyFee : settings.monthlyFee;
+  const monthlyFee = settings.monthlyFee;
   const status = statusFromDebt(deuda, monthlyFee);
 
   await member.update({
     totalFeeExpected: member.totalFeeExpected,
+    totalAdjustments,
     status,
     nextBillingDate: newNext,
   });

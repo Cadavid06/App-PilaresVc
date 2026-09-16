@@ -10,7 +10,7 @@ function SettingsPage() {
     monthlyFee: 20000,
     inscriptionFee: 15000,
     reactivationFee: 20000,
-    siblingMonthlyFee: 25000,
+    defaultSiblingDiscount: 5000,
   });
   const [saved, setSaved] = useState(false);
 
@@ -20,7 +20,7 @@ function SettingsPage() {
         monthlyFee: settings.monthlyFee,
         inscriptionFee: settings.inscriptionFee,
         reactivationFee: settings.reactivationFee,
-        siblingMonthlyFee: settings.siblingMonthlyFee,
+        defaultSiblingDiscount: settings.defaultSiblingDiscount,
       });
     }
   }, [settings]);
@@ -103,19 +103,19 @@ function SettingsPage() {
 
             <div>
               <label className="block text-sm font-semibold text-red-400 mb-2">
-                Mensualidad con descuento de hermanos (COP)
+                Descuento por hermanos (COP)
               </label>
               <input
                 type="number"
                 min="0"
                 step="500"
-                name="siblingMonthlyFee"
-                value={form.siblingMonthlyFee}
+                name="defaultSiblingDiscount"
+                value={form.defaultSiblingDiscount}
                 onChange={handleChange}
                 className={inputCls}
               />
               <p className="text-xs text-gray-400 mt-1">
-                Tarifa mensual aplicada a jugadores marcados como hermano. Se puede cambiar cuando cambie la regla del club.
+                Monto que se resta de la mensualidad base de cada jugador de una familia. Se aplica a ciclos nuevos.
               </p>
             </div>
 

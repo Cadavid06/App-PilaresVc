@@ -1,5 +1,5 @@
 import { MemberShip, Payment } from "../models/memberShip.models.js";
-import DebtAdjustment from "../models/debtAdjustment.models.js";
+import BillingAdjustment from "../models/billingAdjustment.models.js";
 import {
   getSettings,
   calcDeuda,
@@ -36,7 +36,7 @@ const enrichMember = async (plain) => {
 // ─── Helper: include estándar con pagos ───────────────────────────────────
 const fullInclude = [
   { model: Payment, as: "payments", required: false },
-  { model: DebtAdjustment, as: "debtAdjustments", required: false },
+  { model: BillingAdjustment, as: "billingAdjustments", required: false },
 ];
 
 // ════════════════════════════════════════════════════════════════
@@ -48,7 +48,8 @@ export const createMembership = async (req, res) => {
       clientName, documentType, clientDocument,
       clientPhone, clientEmail, birthdate, gender,
     } = req.body;
-    const siblingDiscount = req.body.siblingDiscount === true || req.body.siblingDiscount === "true";
+    const siblingDiscount = Math.max(0, Number(req.body.siblingDiscount || 0));
+    const familyId = String(req.body.familyId || "").trim() || null;
 
     const isNewPlayer =
       req.body.isNewPlayer === true || req.body.isNewPlayer === "true";
@@ -69,8 +70,8 @@ export const createMembership = async (req, res) => {
     }
 
     const settings = await getSettings();
-    const { monthlyFee, inscriptionFee, siblingMonthlyFee } = settings;
-    const applicableMonthlyFee = siblingDiscount ? siblingMonthlyFee : monthlyFee;
+    const { monthlyFee, inscriptionFee } = settings;
+    const applicableMonthlyFee = Math.max(0, monthlyFee - siblingDiscount);
 
     const now = new Date();
     const currentDay   = now.getDate();
@@ -78,11 +79,13 @@ export const createMembership = async (req, res) => {
     const currentYear  = now.getFullYear();
 
     let totalFeeExpected = 0;
+    let totalAdjustments = 0;
     let nextBillingDate;
 
     if (isNewPlayer) {
       // ── JUGADOR NUEVO ────────────────────────────────────────────────────
-      totalFeeExpected = applicableMonthlyFee + inscriptionFee;
+      totalFeeExpected = monthlyFee + inscriptionFee;
+      totalAdjustments = -siblingDiscount;
 
       if (currentDay <= 15) {
         nextBillingDate = new Date(currentYear, currentMonth + 1, 1);
@@ -94,10 +97,11 @@ export const createMembership = async (req, res) => {
       nextBillingDate = new Date(currentYear, currentMonth + 1, 1);
 
       // Deuda que el admin digitó + mes actual automático
-      totalFeeExpected = debtAmount + applicableMonthlyFee;
+      totalFeeExpected = debtAmount + monthlyFee;
+      totalAdjustments = -siblingDiscount;
     }
 
-    const deuda  = Math.max(0, totalFeeExpected - parsedAmount);
+    const deuda  = Math.max(0, totalFeeExpected + totalAdjustments - parsedAmount);
     const status = statusFromDebt(deuda, applicableMonthlyFee);
 
     const newMemberShip = await MemberShip.create({
@@ -107,10 +111,24 @@ export const createMembership = async (req, res) => {
       status,
       totalPaid: parsedAmount,
       totalFeeExpected,
+      totalAdjustments,
       nextBillingDate,
       siblingDiscount,
+      familyId,
       userId: req.user.id,
     });
+
+    if (siblingDiscount > 0) {
+      await BillingAdjustment.create({
+        cycle: `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`,
+        type: "sibling_discount",
+        amount: -siblingDiscount,
+        reason: "Descuento de hermanos",
+        memberShipId: newMemberShip.id,
+        familyId,
+        userId: req.user.id,
+      });
+    }
 
     // Registrar el abono inicial solo si hubo pago
     if (parsedAmount > 0) {
@@ -155,7 +173,7 @@ export const addPayments = async (req, res) => {
     const plain = toPlain(member);
 
     const deudaActual = calcDeuda(plain);
-    const memberMonthlyFee = plain.siblingDiscount ? settings.siblingMonthlyFee : settings.monthlyFee;
+    const memberMonthlyFee = Math.max(0, settings.monthlyFee - (Number(plain.siblingDiscount) || 0));
 
     // 2. Cuota de reincorporación automática:
     //    si un expirado debe 6+ mensualidades y este pago lo devuelve a
@@ -233,11 +251,11 @@ export const adjustDebt = async (req, res) => {
     if (!member) return res.status(404).json({ message: "Jugador no encontrado" });
 
     const settings = await getSettings();
-    const { monthlyFee } = settings;
 
     await applyBillingIfDue(member, settings);
     await member.reload({ include: fullInclude });
     const plain = toPlain(member);
+    const monthlyFee = Math.max(0, settings.monthlyFee - (Number(plain.siblingDiscount) || 0));
 
     if (plain.status === "Activa") {
       return res.status(400).json({ message: "No se puede ajustar la deuda de un jugador activo." });
@@ -263,21 +281,24 @@ export const adjustDebt = async (req, res) => {
       });
     }
 
-    const newTotalFeeExpected = plain.totalFeeExpected - amountToForgive;
+    const newTotalAdjustments = (plain.totalAdjustments || 0) - amountToForgive;
 
-    await member.update({ totalFeeExpected: newTotalFeeExpected });
-    await DebtAdjustment.create({
+    await member.update({ totalAdjustments: newTotalAdjustments });
+    await BillingAdjustment.create({
+      cycle: new Date().toISOString().slice(0, 7),
+      type: "condonation",
       amount: -amountToForgive,
       reason,
       memberShipId: member.id,
+      familyId: member.familyId,
       userId: req.user.id,
     });
 
-    const deudaFinal = calcDeuda({ ...plain, totalFeeExpected: newTotalFeeExpected });
+    const deudaFinal = calcDeuda({ ...plain, totalAdjustments: newTotalAdjustments });
     const newStatus = statusFromDebt(deudaFinal, monthlyFee);
     await member.update({ status: newStatus });
 
-    const updatedPlain = { ...plain, totalFeeExpected: newTotalFeeExpected, status: newStatus, debtAdjustments: [...(plain.debtAdjustments || []), { amount: -amountToForgive, reason, userId: req.user.id }] };
+    const updatedPlain = { ...plain, totalAdjustments: newTotalAdjustments, status: newStatus, billingAdjustments: [...(plain.billingAdjustments || []), { amount: -amountToForgive, reason, type: "condonation", cycle: new Date().toISOString().slice(0, 7), userId: req.user.id }] };
     updatedPlain.deuda = deudaFinal;
 
     return res.json({
@@ -301,23 +322,29 @@ export const forgiveDebt = async (req, res) => {
     if (!member) return res.status(404).json({ message: "Jugador no encontrado" });
 
     const settings = await getSettings();
-    const { monthlyFee } = settings;
 
     await applyBillingIfDue(member, settings);
     await member.reload({ include: fullInclude });
     const plain = toPlain(member);
+    const monthlyFee = Math.max(0, settings.monthlyFee - (Number(plain.siblingDiscount) || 0));
 
-    // No permitir que totalFeeExpected baje de 0
-    if (plain.totalFeeExpected < monthlyFee) {
+    // No permitir que la deuda quede por debajo de una mensualidad
+    if (calcDeuda(plain) < monthlyFee) {
       return res.status(400).json({
         message: "No hay deuda suficiente para perdonar un mes",
       });
     }
 
-    // Operación atómica: sin race condition
-    await MemberShip.decrement("totalFeeExpected", {
-      by: monthlyFee,
-      where: { id },
+    const totalAdjustments = (plain.totalAdjustments || 0) - monthlyFee;
+    await member.update({ totalAdjustments });
+    await BillingAdjustment.create({
+      cycle: new Date().toISOString().slice(0, 7),
+      type: "condonation",
+      amount: -monthlyFee,
+      reason: "Condonación manual de una mensualidad",
+      memberShipId: member.id,
+      familyId: member.familyId,
+      userId: req.user.id,
     });
 
     await member.reload({ include: fullInclude });
@@ -392,7 +419,7 @@ export const getMembershipById = async (req, res) => {
   }
 };
 
-// ════════════════════════════════════════════════════════════════
+// ════════���═══════════════════════════════════════════════════════
 // ACTUALIZAR DATOS DEL JUGADOR
 // ════════════════════════════════════════════════════════════════
 export const updateUserData = async (req, res) => {
