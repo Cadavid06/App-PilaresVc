@@ -128,15 +128,18 @@ export default function MembershipsTable({
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <div className="font-semibold text-white text-sm md:hidden">
-                            {shortNameParts.length > 1 ? (
-                              <>
+                          <div className="font-semibold text-white text-sm md:hidden flex items-center justify-between w-full">
+                            <div>
+                              {shortNameParts.length > 1 ? (
+                                <>
+                                  <p className="leading-tight">{shortNameParts[0]}</p>
+                                  <p className="leading-tight">{shortNameParts[1]}</p>
+                                </>
+                              ) : (
                                 <p className="leading-tight">{shortNameParts[0]}</p>
-                                <p className="leading-tight">{shortNameParts[1]}</p>
-                              </>
-                            ) : (
-                              <p className="leading-tight">{shortNameParts[0]}</p>
-                            )}
+                              )}
+                            </div>
+                            <ChevronDown size={16} className={`text-gray-400 transition-transform ml-2 ${expandedRow === actualId ? 'rotate-180' : ''}`} />
                           </div>
                           <span className="font-semibold text-white hidden md:block">
                             {m.clientName}
@@ -192,50 +195,62 @@ export default function MembershipsTable({
                       <tr key={`${actualId}-expanded`}>
                         <td colSpan="7" className="px-6 py-4 bg-zinc-700/20">
                           <div className="flex flex-wrap gap-2">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); getMembership(actualId); }}
-                              className="flex items-center gap-1 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 text-blue-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
-                            >
-                              <Eye size={14} />
-                              <span className="hidden sm:inline">Ver</span>
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); updateClient(m); }}
-                              className="flex items-center gap-1 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/30 text-yellow-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
-                            >
-                              <Edit size={14} />
-                              <span className="hidden sm:inline">Actualizar</span>
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); addPayments(m); }}
-                              className="flex items-center gap-1 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
-                            >
-                              <CreditCard size={14} />
-                              <span className="hidden sm:inline">Pagar</span>
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); markAttendance(m); }}
-                              className="flex items-center gap-1 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
-                            >
-                              <Calendar size={14} />
-                              <span className="hidden sm:inline">Ajustar Deuda</span>
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); openAdjustments(m); }}
-                              className="flex items-center gap-1 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
-                            >
-                              <SlidersHorizontal size={14} />
-                              <span className="hidden sm:inline">Ajustes</span>
-                            </button>
-                            {isAdmin && (
                               <button
-                                onClick={(e) => { e.stopPropagation(); confirmDelete(actualId); }}
-                                className="flex items-center gap-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
+                                onClick={(e) => { e.stopPropagation(); getMembership(actualId); }}
+                                aria-label="Ver detalles"
+                                title="Ver detalles"
+                                className="flex items-center gap-1 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 text-blue-400 px-3 py-2 sm:px-2 sm:py-1 rounded-lg transition-all duration-200 font-medium text-sm"
                               >
-                                <Trash2 size={14} />
-                                <span className="hidden sm:inline">Eliminar</span>
+                                <Eye size={16} className="sm:w-[14px] sm:h-[14px]" />
+                                <span className="hidden sm:inline">Ver</span>
                               </button>
-                            )}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); updateClient(m); }}
+                                aria-label="Actualizar jugador"
+                                title="Actualizar jugador"
+                                className="flex items-center gap-1 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/30 text-yellow-400 px-3 py-2 sm:px-2 sm:py-1 rounded-lg transition-all duration-200 font-medium text-sm"
+                              >
+                                <Edit size={16} className="sm:w-[14px] sm:h-[14px]" />
+                                <span className="hidden sm:inline">Actualizar</span>
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); addPayments(m); }}
+                                aria-label="Registrar pago"
+                                title="Registrar pago"
+                                className="flex items-center gap-1 bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 text-emerald-400 px-3 py-2 sm:px-2 sm:py-1 rounded-lg transition-all duration-200 font-medium text-sm"
+                              >
+                                <CreditCard size={16} className="sm:w-[14px] sm:h-[14px]" />
+                                <span className="hidden sm:inline">Pagar</span>
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); markAttendance(m); }}
+                                aria-label="Ajustar deuda por inasistencia"
+                                title="Ajustar deuda por inasistencia"
+                                className="flex items-center gap-1 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 text-indigo-400 px-3 py-2 sm:px-2 sm:py-1 rounded-lg transition-all duration-200 font-medium text-sm"
+                              >
+                                <Calendar size={16} className="sm:w-[14px] sm:h-[14px]" />
+                                <span className="hidden sm:inline">Ajustar Deuda</span>
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); openAdjustments(m); }}
+                                aria-label="Gestión de ajustes"
+                                title="Gestión de ajustes"
+                                className="flex items-center gap-1 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-400 px-3 py-2 sm:px-2 sm:py-1 rounded-lg transition-all duration-200 font-medium text-sm"
+                              >
+                                <SlidersHorizontal size={16} className="sm:w-[14px] sm:h-[14px]" />
+                                <span className="hidden sm:inline">Ajustes</span>
+                              </button>
+                              {isAdmin && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); confirmDelete(actualId); }}
+                                  aria-label="Eliminar membresía"
+                                  title="Eliminar membresía"
+                                  className="flex items-center gap-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-400 px-3 py-2 sm:px-2 sm:py-1 rounded-lg transition-all duration-200 font-medium text-sm"
+                                >
+                                  <Trash2 size={16} className="sm:w-[14px] sm:h-[14px]" />
+                                  <span className="hidden sm:inline">Eliminar</span>
+                                </button>
+                              )}
                           </div>
                         </td>
                       </tr>

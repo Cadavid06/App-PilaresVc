@@ -7,7 +7,6 @@ import {
 import { X, Plus, Trash2, Users, AlertCircle } from "lucide-react";
 
 const TYPES = [
-  { value: "descuento_hermano", label: "Descuento hermano", color: "text-green-400" },
   { value: "penalidad", label: "Penalidad", color: "text-red-400" },
   { value: "colaboracion", label: "Colaboración", color: "text-blue-400" },
   { value: "manual", label: "Manual", color: "text-yellow-400" },
@@ -19,7 +18,7 @@ export default function AdjustmentsModal({ isOpen, onClose, membership }) {
   const [form, setForm] = useState({
     cycle: "",
     amount: "",
-    type: "descuento_hermano",
+    type: "penalidad",
     description: "",
     applyToSiblings: false,
   });
@@ -60,7 +59,7 @@ export default function AdjustmentsModal({ isOpen, onClose, membership }) {
 
     // Negativo para descuentos, positivo para penalidades
     const finalAmount =
-      form.type === "descuento_hermano" || form.type === "colaboracion"
+      form.type === "colaboracion"
         ? -Math.abs(amount)
         : Math.abs(amount);
 
@@ -167,7 +166,7 @@ export default function AdjustmentsModal({ isOpen, onClose, membership }) {
                 className="w-full bg-zinc-800/50 border border-zinc-600/50 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500"
               />
               <p className="text-xs text-gray-500 mt-1">
-                {form.type === "descuento_hermano" || form.type === "colaboracion"
+                {form.type === "colaboracion"
                   ? "Se restará de la deuda (negativo)"
                   : "Se sumará a la deuda (positivo)"}
               </p>

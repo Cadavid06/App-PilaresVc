@@ -49,7 +49,7 @@ function MembershipPage() {
               Membresías
             </h1>
             <p className="mt-2 text-sm text-zinc-400">
-              {filteredMemberships.length} jugador{filteredMemberships.length !== 1 ? 'es' : ''} en el registro
+              {filteredMemberships.length} jugador{filteredMemberships.length !== 1 ? 'es' : ''} filtrado{filteredMemberships.length !== 1 ? 's' : ''} en el registro
             </p>
           </div>
           <Link

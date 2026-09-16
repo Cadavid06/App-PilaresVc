@@ -125,6 +125,8 @@ function MembershipFormPage() {
               </label>
               <input
                 type="number"
+                min="0"
+                onKeyDown={(e) => { if (e.key === "-" || e.key === "e") e.preventDefault(); }}
                 placeholder="Ej: 80000"
                 {...register("debtAmount")}
                 className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -143,6 +145,7 @@ function MembershipFormPage() {
               placeholder="Nombre completo"
               {...register("clientName", {
                 required: "El nombre es obligatorio",
+                pattern: { value: /^[A-Za-zÁ-ÿ\s]+$/, message: "El nombre solo puede contener letras y espacios" }
               })}
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
@@ -212,6 +215,7 @@ function MembershipFormPage() {
               placeholder="Número de documento"
               {...register("clientDocument", {
                 required: "El documento es obligatorio",
+                pattern: { value: /^[A-Za-z0-9]+$/, message: "El documento no puede contener símbolos" }
               })}
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
@@ -228,6 +232,7 @@ function MembershipFormPage() {
               placeholder="Teléfono"
               {...register("clientPhone", {
                 required: "El teléfono es obligatorio",
+                pattern: { value: /^[0-9+]+$/, message: "El teléfono solo puede contener números y el signo +" }
               })}
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
@@ -275,6 +280,8 @@ function MembershipFormPage() {
               </label>
               <input
                 type="number"
+                min="0"
+                onKeyDown={(e) => { if (e.key === "-" || e.key === "e") e.preventDefault(); }}
                 placeholder="Ej: 20000"
                 {...register("amount")}
                 className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"

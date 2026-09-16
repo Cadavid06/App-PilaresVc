@@ -4,6 +4,32 @@ Todas las modificaciones relevantes del proyecto quedan documentadas aquí, agru
 
 ---
 
+## Bloque 10 — Correcciones de QA y Usabilidad Móvil (16/09/2026)
+
+### Correcciones implementadas
+
+- **Ajustes de Cobro Automáticos**: Eliminada la opción manual "Descuento por hermano" de `AdjustmentsModal.jsx`, ya que este descuento se aplica automáticamente desde las configuraciones a los miembros de un mismo "Grupo familiar".
+- **Validaciones Numéricas (Prevención de negativos)**: Se añadió `min="0"` y un bloqueo estricto por teclado (`onKeyDown`) en los campos "Deuda total" y "Abono inicial" de la página de registro, así como en todos los campos de tarifas de la página de Configuración (`SettingsPage.jsx`).
+- **Validaciones de Texto (Símbolos inválidos)**: Expresiones regulares agregadas al formulario de registro (`MembershipFormPage.jsx`) para Nombre (solo letras y espacios), Documento (solo letras y números) y Teléfono (solo números y signo +).
+- **Mejoras Móviles (Tabla Membresías)**: Se agregó un indicador visual (`ChevronDown`) al lado del nombre del jugador en la vista móvil para indicar que la fila es desplegable. También se mejoró la accesibilidad agregando `aria-label` y `title` a todos los botones de acción (`MembershipsTable.jsx`).
+- **Responsividad de Usuarios**: La tabla de `UsersPage.jsx` ahora se adapta mejor a pantallas pequeñas sin ocultar las acciones, modificando el `min-width` y el comportamiento del `whitespace`.
+- **Claridad de Filtros**: El contador en la página de Membresías ahora indica explícitamente "N jugadores filtrados en el registro".
+- **Limpieza**: Se eliminaron scripts temporales innecesarios (`qa-introspect.mjs` y `frontend/tmpfixqa.mjs`).
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `frontend/src/components/AdjustmentsModal.jsx` | Se eliminó "Descuento por hermano" de las opciones manuales. |
+| `frontend/src/pages/MembershipFormPage.jsx` | Validaciones regex y prevención de valores negativos. |
+| `frontend/src/components/MembershipsTable.jsx` | Indicador chevron móvil y atributos ARIA en botones. |
+| `frontend/src/pages/UsersPage.jsx` | Ajustes responsive (clases CSS) en la tabla. |
+| `frontend/src/pages/SettingsPage.jsx` | Prevención de escritura de valores negativos. |
+| `frontend/src/pages/MembershipsPage.jsx` | Texto aclaratorio en contador de filtros. |
+| (Raíz) | Eliminados scripts temporales `.mjs`. |
+
+---
+
 ## Bloque 1 — Facturación, estados y configuración (14/09/2026)
 
 ### Reglas de negocio definidas (aprobadas por el cliente)

@@ -72,6 +72,7 @@ function SettingsPage() {
               <input
                 type="number"
                 min="0"
+                onKeyDown={(e) => { if (e.key === "-" || e.key === "e") e.preventDefault(); }}
                 step="500"
                 name="monthlyFee"
                 value={form.monthlyFee}
@@ -90,6 +91,7 @@ function SettingsPage() {
               <input
                 type="number"
                 min="0"
+                onKeyDown={(e) => { if (e.key === "-" || e.key === "e") e.preventDefault(); }}
                 step="500"
                 name="inscriptionFee"
                 value={form.inscriptionFee}
@@ -108,6 +110,7 @@ function SettingsPage() {
               <input
                 type="number"
                 min="0"
+                onKeyDown={(e) => { if (e.key === "-" || e.key === "e") e.preventDefault(); }}
                 step="500"
                 name="reactivationFee"
                 value={form.reactivationFee}
@@ -127,6 +130,7 @@ function SettingsPage() {
               <input
                 type="number"
                 min="0"
+                onKeyDown={(e) => { if (e.key === "-" || e.key === "e") e.preventDefault(); }}
                 step="500"
                 name="siblingDiscount"
                 value={form.siblingDiscount}
