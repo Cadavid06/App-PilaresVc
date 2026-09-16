@@ -10,6 +10,7 @@ function SettingsPage() {
     monthlyFee: 20000,
     inscriptionFee: 15000,
     reactivationFee: 20000,
+    siblingDiscount: 0,
   });
   const [saved, setSaved] = useState(false);
 
@@ -19,6 +20,7 @@ function SettingsPage() {
         monthlyFee: settings.monthlyFee,
         inscriptionFee: settings.inscriptionFee,
         reactivationFee: settings.reactivationFee,
+        siblingDiscount: settings.siblingDiscount || 0,
       });
     }
   }, [settings]);
@@ -115,6 +117,24 @@ function SettingsPage() {
               <p className="text-xs text-gray-400 mt-1">
                 Se cobra automáticamente a un jugador expirado con 6+ meses de
                 deuda que vuelve a ponerse al día.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-red-400 mb-2">
+                Descuento por hermano (COP)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="500"
+                name="siblingDiscount"
+                value={form.siblingDiscount}
+                onChange={handleChange}
+                className={inputCls}
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Se aplica automáticamente a jugadores con "Grupo familiar" asignado. Se resta de la mensualidad cada mes.
               </p>
             </div>
           </div>

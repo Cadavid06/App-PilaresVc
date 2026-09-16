@@ -9,12 +9,14 @@ import {
   RefreshCw,
   Trash2,
   Calendar,
+  SlidersHorizontal,
 } from "lucide-react";
 import MembershipsModal from "./MembershipsModals";
 import UpdateModals from "./UpdateModals";
 import PaymentsModals from "./PaymentsModals";
 import ConfirmModal from "./DeleteMembershipModal";
 import AttendanceModal from "./AttendanceModal";
+import AdjustmentsModal from "./AdjustmentsModal";
 
 export default function MembershipsTable({
   membership,
@@ -35,6 +37,8 @@ export default function MembershipsTable({
   const [membershipToDelete, setMembershipToDelete] = useState(null);
   const [attendance, setAttendance] = useState(null);
   const [isModalOpenAttendance, setIsModalOpenAttendance] = useState(false);
+  const [adjustments, setAdjustments] = useState(null);
+  const [isModalOpenAdjustments, setIsModalOpenAdjustments] = useState(false);
 
   const toggleRow = (id) => {
     setExpandedRow(expandedRow === id ? null : id);
@@ -59,6 +63,11 @@ export default function MembershipsTable({
   const markAttendance = (member) => {
     setAttendance(member);
     setIsModalOpenAttendance(true);
+  };
+
+  const openAdjustments = (member) => {
+    setAdjustments(member);
+    setIsModalOpenAdjustments(true);
   };
 
   const confirmDelete = (id) => {
@@ -211,6 +220,13 @@ export default function MembershipsTable({
                               <Calendar size={14} />
                               <span className="hidden sm:inline">Ajustar Deuda</span>
                             </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); openAdjustments(m); }}
+                              className="flex items-center gap-1 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-400 px-2 py-1 rounded-lg transition-all duration-200 font-medium text-sm"
+                            >
+                              <SlidersHorizontal size={14} />
+                              <span className="hidden sm:inline">Ajustes</span>
+                            </button>
                             {isAdmin && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); confirmDelete(actualId); }}
@@ -265,6 +281,13 @@ export default function MembershipsTable({
         isOpen={isModalOpenAttendance}
         onClose={() => setIsModalOpenAttendance(false)}
         membership={attendance}
+      />
+      {/* Modal de ajustes de cobro */}
+      <AdjustmentsModal
+        key={`adjustments-${adjustments?.id || adjustments?._id}`}
+        isOpen={isModalOpenAdjustments}
+        onClose={() => setIsModalOpenAdjustments(false)}
+        membership={adjustments}
       />
     </>
   );

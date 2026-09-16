@@ -4,6 +4,8 @@ import {
   calcDeuda,
   statusFromDebt,
   applyBillingIfDue,
+  getAdjustmentsTotal,
+  getAllAdjustmentsTotal,
 } from "../services/billing.service.js";
 import { calculateCategory, resolveDocumentType } from "../utils/category.js";
 
@@ -44,7 +46,7 @@ export const createMembership = async (req, res) => {
   try {
     const {
       clientName, documentType, clientDocument,
-      clientPhone, clientEmail, birthdate, gender,
+      clientPhone, clientEmail, birthdate, gender, familyId,
     } = req.body;
 
     const isNewPlayer =
@@ -89,6 +91,7 @@ export const createMembership = async (req, res) => {
       clientName, documentType, clientDocument,
       clientPhone, clientEmail, birthdate,
       gender: gender === "Femenino" ? "Femenino" : "Masculino",
+      familyId: familyId || null,
       status,
       totalPaid: parsedAmount,
       totalFeeExpected,
@@ -109,7 +112,9 @@ export const createMembership = async (req, res) => {
 
     const saved = await MemberShip.findByPk(newMemberShip.id, { include: fullInclude });
     const plain = await enrichMember(toPlain(saved));
-    plain.deuda = calcDeuda(plain);
+    const adj = await getAdjustmentsTotal(newMemberShip.id);
+    const discount = (plain.familyId && settings.siblingDiscount > 0) ? settings.siblingDiscount : 0;
+    plain.deuda = calcDeuda(plain, adj, discount);
 
     res.json(plain);
   } catch (error) {
@@ -138,7 +143,9 @@ export const addPayments = async (req, res) => {
     await applyBillingIfDue(member, settings);
     const plain = toPlain(member);
 
-    const deudaActual = calcDeuda(plain);
+    const totalAdj = await getAdjustmentsTotal(member.id);
+    const discount = (member.familyId && settings.siblingDiscount > 0) ? settings.siblingDiscount : 0;
+    const deudaActual = calcDeuda(plain, totalAdj, discount);
 
     // 2. Cuota de reincorporación automática:
     //    si un expirado debe 6+ mensualidades y este pago lo devuelve a
@@ -185,11 +192,15 @@ export const addPayments = async (req, res) => {
     await member.reload({ include: fullInclude });
 
     const updatedPlain = toPlain(member);
-    const deuda = calcDeuda(updatedPlain);
+    const newAdj = await getAdjustmentsTotal(member.id);
+    const newDiscount = (member.familyId && settings.siblingDiscount > 0) ? settings.siblingDiscount : 0;
+    const deuda = calcDeuda(updatedPlain, newAdj, newDiscount);
     updatedPlain.status = statusFromDebt(deuda, settings.monthlyFee);
     await member.update({ status: updatedPlain.status });
 
     updatedPlain.deuda = deuda;
+    updatedPlain.totalAdjustments = newAdj;
+    updatedPlain.siblingDiscount = newDiscount;
     return res.json(addCategory(updatedPlain));
   } catch (error) {
     console.error(error);
@@ -218,11 +229,14 @@ export const adjustDebt = async (req, res) => {
     await member.reload({ include: fullInclude });
     const plain = toPlain(member);
 
+    const totalAdj = await getAdjustmentsTotal(member.id);
+    const discount = (member.familyId && settings.siblingDiscount > 0) ? settings.siblingDiscount : 0;
+
     if (plain.status === "Activa") {
       return res.status(400).json({ message: "No se puede ajustar la deuda de un jugador activo." });
     }
 
-    const currentDebt = calcDeuda(plain);
+    const currentDebt = calcDeuda(plain, totalAdj, discount);
 
     if (amountToForgive <= 0) {
       return res.status(400).json({ message: "El monto a condonar debe ser mayor a 0." });
@@ -246,12 +260,14 @@ export const adjustDebt = async (req, res) => {
 
     await member.update({ totalFeeExpected: newTotalFeeExpected });
 
-    const deudaFinal = calcDeuda({ ...plain, totalFeeExpected: newTotalFeeExpected });
+    const deudaFinal = calcDeuda({ ...plain, totalFeeExpected: newTotalFeeExpected }, totalAdj, discount);
     const newStatus = statusFromDebt(deudaFinal, monthlyFee);
     await member.update({ status: newStatus });
 
     const updatedPlain = { ...plain, totalFeeExpected: newTotalFeeExpected, status: newStatus };
     updatedPlain.deuda = deudaFinal;
+    updatedPlain.totalAdjustments = totalAdj;
+    updatedPlain.siblingDiscount = discount;
 
     return res.json({
       message: `Se condonaron $${amountToForgive.toLocaleString()} exitosamente.`,
@@ -280,6 +296,9 @@ export const forgiveDebt = async (req, res) => {
     await member.reload({ include: fullInclude });
     const plain = toPlain(member);
 
+    const totalAdj = await getAdjustmentsTotal(member.id);
+    const discount = (member.familyId && settings.siblingDiscount > 0) ? settings.siblingDiscount : 0;
+
     // No permitir que totalFeeExpected baje de 0
     if (plain.totalFeeExpected < monthlyFee) {
       return res.status(400).json({
@@ -295,11 +314,13 @@ export const forgiveDebt = async (req, res) => {
 
     await member.reload({ include: fullInclude });
     const updatedPlain = toPlain(member);
-    const deuda = calcDeuda(updatedPlain);
+    const deuda = calcDeuda(updatedPlain, totalAdj, discount);
     const status = statusFromDebt(deuda, monthlyFee);
     await member.update({ status });
 
     updatedPlain.deuda = deuda;
+    updatedPlain.totalAdjustments = totalAdj;
+    updatedPlain.siblingDiscount = discount;
     return res.json(updatedPlain);
   } catch (error) {
     console.error(error);
@@ -321,6 +342,8 @@ export const getMemberships = async (req, res) => {
     });
 
     const settings = await getSettings();
+    const adjustmentsMap = await getAllAdjustmentsTotal();
+    const { siblingDiscount } = settings;
 
     // Facturación lazy: cualquier miembro con nextBillingDate <= hoy se
     // pone al día en el momento de la lectura (aunque el server haya dormido)
@@ -331,7 +354,12 @@ export const getMemberships = async (req, res) => {
     res.json(
       memberships.map((m) => {
         const plain = addCategory(toPlain(m));
-        plain.deuda = calcDeuda(plain);
+        const adj = adjustmentsMap[m.id] || 0;
+        const discount = (m.familyId && siblingDiscount > 0) ? siblingDiscount : 0;
+        plain.deuda = calcDeuda(plain, adj, discount);
+        plain.status = statusFromDebt(plain.deuda, settings.monthlyFee);
+        plain.totalAdjustments = adj;
+        plain.siblingDiscount = discount;
         return plain;
       })
     );
@@ -357,7 +385,12 @@ export const getMembershipById = async (req, res) => {
     await applyBillingIfDue(member, settings);
 
     const plain = await enrichMember(toPlain(member));
-    plain.deuda = calcDeuda(plain);
+    const adj = await getAdjustmentsTotal(member.id);
+    const discount = (member.familyId && settings.siblingDiscount > 0) ? settings.siblingDiscount : 0;
+    plain.deuda = calcDeuda(plain, adj, discount);
+    plain.status = statusFromDebt(plain.deuda, settings.monthlyFee);
+    plain.totalAdjustments = adj;
+    plain.siblingDiscount = discount;
     return res.json(plain);
   } catch (error) {
     console.error(error);
@@ -370,9 +403,9 @@ export const getMembershipById = async (req, res) => {
 // ════════════════════════════════════════════════════════════════
 export const updateUserData = async (req, res) => {
   const { id } = req.params;
-  const { clientName, documentType, clientDocument, clientPhone, clientEmail, birthdate, gender } = req.body;
+  const { clientName, documentType, clientDocument, clientPhone, clientEmail, birthdate, gender, familyId } = req.body;
 
-  if (!clientName && !documentType && !clientDocument && !clientPhone && !clientEmail && !birthdate && !gender) {
+  if (!clientName && !documentType && !clientDocument && !clientPhone && !clientEmail && !birthdate && !gender && familyId === undefined) {
     return res.status(400).json({ message: "No se enviaron datos válidos para actualizar." });
   }
 
@@ -388,6 +421,7 @@ export const updateUserData = async (req, res) => {
       ...(clientEmail    && { clientEmail }),
       ...(birthdate      && { birthdate }),
       ...(gender         && { gender }),
+      ...(familyId !== undefined && { familyId: familyId || null }),
     });
 
     await member.reload({ include: fullInclude });

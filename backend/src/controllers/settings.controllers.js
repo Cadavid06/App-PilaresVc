@@ -23,6 +23,7 @@ export const updateSettings = async (req, res) => {
     const monthlyFee = parsePositiveFee(req.body.monthlyFee, current.monthlyFee);
     const inscriptionFee = parsePositiveFee(req.body.inscriptionFee, current.inscriptionFee);
     const reactivationFee = parsePositiveFee(req.body.reactivationFee, current.reactivationFee);
+    const siblingDiscount = parsePositiveFee(req.body.siblingDiscount, current.siblingDiscount);
 
     const [setting] = await Setting.findOrCreate({
       where: { id: SETTINGS_ID },
@@ -33,6 +34,7 @@ export const updateSettings = async (req, res) => {
       monthlyFee,
       inscriptionFee,
       reactivationFee,
+      siblingDiscount,
       updatedBy: req.user.id,
     });
 
@@ -40,6 +42,7 @@ export const updateSettings = async (req, res) => {
       monthlyFee: setting.monthlyFee,
       inscriptionFee: setting.inscriptionFee,
       reactivationFee: setting.reactivationFee,
+      siblingDiscount: setting.siblingDiscount,
     });
   } catch (error) {
     console.error(error);

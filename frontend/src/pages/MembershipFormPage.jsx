@@ -169,6 +169,22 @@ function MembershipFormPage() {
             )}
           </div>
 
+          {/* Grupo familiar (opcional) */}
+          <div>
+            <label className="block text-sm font-semibold text-red-400 mb-1">
+              Grupo familiar <span className="text-gray-500">(opcional)</span>
+            </label>
+            <input
+              type="text"
+              placeholder="Ej: Hermanos García"
+              {...register("familyId")}
+              className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Ingresa el mismo nombre del grupo para hermanos. Esto permite aplicar descuentos grupales.
+            </p>
+          </div>
+
           {/* Tipo de documento */}
           <div>
             <label className="block text-sm font-semibold text-red-400 mb-1">Tipo de documento</label>

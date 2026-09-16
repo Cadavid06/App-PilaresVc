@@ -12,6 +12,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
     clientEmail: "",
     birthdate: "",
     gender: "Masculino",
+    familyId: "",
   });
 
   useEffect(() => {
@@ -26,6 +27,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
           ? new Date(membership.birthdate).toISOString().split("T")[0]
           : "",
         gender: membership.gender || "Masculino",
+        familyId: membership.familyId || "",
       });
     }
   }, [membership]);
@@ -50,7 +52,7 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
 
   return (
     <div className="fixed inset-0 bg-zinc-900/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/50 p-5 rounded-2xl max-w-sm w-full mx-4 shadow-2xl">
+      <div className="bg-zinc-800/90 backdrop-blur-xl border border-zinc-700/50 p-5 rounded-2xl max-w-sm w-full mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
           <div>
             <h2 className="text-xl font-bold text-white mb-1">Actualizar Jugador</h2>
@@ -184,6 +186,23 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               <option value="Masculino">Masculino</option>
               <option value="Femenino">Femenino</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-red-400 mb-1">
+              Grupo familiar
+            </label>
+            <input
+              type="text"
+              name="familyId"
+              value={formData.familyId}
+              onChange={handleChange}
+              placeholder="Ej: Hermanos García"
+              className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Mismo texto = mismo grupo de hermanos
+            </p>
           </div>
 
           <div className="flex gap-3 mt-4">

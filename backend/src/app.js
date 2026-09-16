@@ -4,6 +4,7 @@ import memberShip from "./routes/memberShip.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
 import billingRoutes from "./routes/billing.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import billingAdjustmentRoutes from "./routes/billingAdjustment.routes.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
@@ -33,5 +34,6 @@ app.use("/api", memberShip);
 app.use("/api", settingsRoutes);
 app.use("/api", billingRoutes);
 app.use("/api", userRoutes);
+app.use("/api", billingAdjustmentRoutes);
 
 export default app;

@@ -568,6 +568,102 @@ Motivo: los UUID evitan enumerar registros por ID (ajuste de seguridad) y facili
 
 ---
 
+## Bloque 9 — Ajustes de cobro y grupos familiares (15/09/2026)
+
+### Concepto
+
+Nuevo sistema de **ajustes de facturación** que permite al admin registrar descuentos (hermanos, colaboraciones), penalidades y ajustes manuales **con trazabilidad completa**. Se separa de la condonación (que perdona deuda histórica).
+
+### Cambios en el backend
+
+**Nuevo modelo `BillingAdjustment`:**
+- `memberShipId` (FK → memberships)
+- `cycle` (ej. "2026-10")
+- `amount` (negativo = descuento, positivo = penalidad)
+- `type`: `descuento_hermano`, `penalidad`, `colaboracion`, `manual`
+- `description` (texto libre)
+- `userId` (quién lo hizo)
+
+**Nuevo campo `familyId` en memberships:**
+- Texto nullable que agrupa hermanos (ej. "Hermanos García")
+
+**Modificaciones en `billing.service.js`:**
+- `calcDeuda` ahora acepta `totalAdjustments` como segundo parámetro
+- Nuevos helpers: `getAdjustmentsTotal(memberShipId)` y `getAllAdjustmentsTotal()`
+- `applyBillingIfDue` considera ajustes al calcular estado
+
+**Modificaciones en `membership.controllers.js`:**
+- `getMemberships`: retorna `totalAdjustments` por jugador
+- `getMembershipById`: retorna `totalAdjustments`
+- `addPayments`: considera ajustes al calcular deuda y tope de pago
+- `adjustDebt`: considera ajustes al calcular deuda actual
+- `forgiveDebt`: considera ajustes al calcular deuda
+- `createMembership`: acepta `familyId` opcional
+- `updateUserData`: permite actualizar `familyId`
+
+**Nuevas rutas (`/api/adjustments`):**
+- `GET /adjustments/summary` → mapa de totales por jugador
+- `GET /adjustments/:memberShipId` → ajustes de un jugador
+- `POST /adjustments/:memberShipId` → crear ajuste (con opción `applyToSiblings`)
+- `DELETE /adjustments/:id` → eliminar ajuste (admin only)
+
+### Cambios en el frontend
+
+**Nuevo componente `AdjustmentsModal`:**
+- Lista de ajustes existentes del jugador
+- Formulario para crear nuevos (ciclo, monto, tipo, descripción)
+- Checkbox "Aplicar a hermanos" cuando el jugador tiene `familyId`
+- Botón de eliminar por ajuste
+
+**`PaymentsModals`:**
+- Ahora muestra desglose: facturado, ajustes, pagado, deuda total
+
+**`MembershipsTable`:**
+- Nuevo botón "Ajustes" (ícono `SlidersHorizontal`) por jugador
+
+**`MembershipFormPage`:**
+- Nuevo campo opcional "Grupo familiar" (text input)
+
+**Nuevo API client `billingAdjustments.js`:**
+- `getAdjustmentsByMemberRequest`, `createAdjustmentRequest`, `deleteAdjustmentRequest`, `getAdjustmentsSummaryRequest`
+
+### Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `backend/src/models/billingAdjustment.models.js` | Modelo de ajustes de facturación |
+| `backend/src/controllers/billingAdjustment.controllers.js` | CRUD de ajustes |
+| `backend/src/routes/billingAdjustment.routes.js` | Rutas protegidas |
+| `frontend/src/api/billingAdjustments.js` | Cliente axios |
+| `frontend/src/components/AdjustmentsModal.jsx` | Modal de gestión de ajustes |
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `backend/src/models/memberShip.models.js` | Nuevo campo `familyId` |
+| `backend/src/services/billing.service.js` | Import de BillingAdjustment, helpers de ajustes, `calcDeuda` con ajustes |
+| `backend/src/controllers/membership.controllers.js` | Todos los cálculos de deuda consideran ajustes; `createMembership` acepta `familyId` |
+| `backend/src/app.js` | Monta `billingAdjustmentRoutes` |
+| `frontend/src/components/MembershipsTable.jsx` | Botón "Ajustes" + import de AdjustmentsModal |
+| `frontend/src/components/PaymentsModals.jsx` | Desglose de deuda con ajustes |
+| `frontend/src/pages/MembershipFormPage.jsx` | Campo "Grupo familiar" |
+
+### Acciones manuales requeridas
+
+1. Ejecutar en pgAdmin (Neon):
+```sql
+ALTER TABLE "memberships" ADD COLUMN "familyId" VARCHAR(255);
+```
+2. Render desplegará automáticamente el backend y frontend.
+
+### Verificaciones realizadas
+
+- `node --check` en todos los archivos backend nuevos/modificados.
+- Build de producción del frontend exitoso.
+
+---
+
 ## Legado (anterior al Bloque 1)
 
 Registro git existente: migración de Mongo a PostgreSQL, cron inicial en Render, mejoras de estilos. No documentado formalmente.

@@ -1,11 +1,14 @@
 import { Op } from "sequelize";
+import sequelize from "../db.js";
 import Setting from "../models/settings.models.js";
 import { MemberShip } from "../models/memberShip.models.js";
+import BillingAdjustment from "../models/billingAdjustment.models.js";
 
 const DEFAULTS = {
   monthlyFee: 20000,
   inscriptionFee: 15000,
   reactivationFee: 20000,
+  siblingDiscount: 0,
 };
 
 // ID fijo de la fila de configuración (los UUID no son autoincrementales).
@@ -41,12 +44,40 @@ export async function getSettings() {
     monthlyFee: row.monthlyFee,
     inscriptionFee: row.inscriptionFee,
     reactivationFee: row.reactivationFee,
+    siblingDiscount: row.siblingDiscount,
   };
 }
 
 // ─── Cálculo de deuda ──────────────────────────────────────────────────────
-export function calcDeuda(plain) {
-  return Math.max(0, (plain.totalFeeExpected || 0) - (plain.totalPaid || 0));
+export function calcDeuda(plain, totalAdjustments = 0, siblingDiscount = 0) {
+  const base = (plain.totalFeeExpected || 0) + totalAdjustments - (plain.totalPaid || 0);
+  return Math.max(0, base - siblingDiscount);
+}
+
+// ─── Total de ajustes de un jugador ───────────────────────────────────────
+export async function getAdjustmentsTotal(memberShipId) {
+  const result = await BillingAdjustment.sum("amount", {
+    where: { memberShipId },
+  });
+  return result || 0;
+}
+
+// ─── Mapa de ajustes para todos los jugadores (para listados) ──────────────
+export async function getAllAdjustmentsTotal() {
+  const results = await BillingAdjustment.findAll({
+    attributes: [
+      "memberShipId",
+      [sequelize.fn("SUM", sequelize.col("amount")), "total"],
+    ],
+    group: ["memberShipId"],
+    raw: true,
+  });
+
+  const map = {};
+  for (const r of results) {
+    map[r.memberShipId] = parseFloat(r.total) || 0;
+  }
+  return map;
 }
 
 // ─── Estado basado en reglas de negocio ────────────────────────────────────
@@ -87,10 +118,11 @@ export async function applyBillingIfDue(member, settings) {
   if (billed === 0) return { changed: false, billed: 0 };
 
   const newNext = toDate(cursor.y, cursor.m, cursor.d);
+  const totalAdj = await getAdjustmentsTotal(member.id);
   const deuda = calcDeuda({
     totalFeeExpected: member.totalFeeExpected,
     totalPaid: member.totalPaid,
-  });
+  }, totalAdj);
   const status = statusFromDebt(deuda, settings.monthlyFee);
 
   await member.update({

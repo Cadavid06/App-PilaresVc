@@ -33,6 +33,11 @@ const MemberShip = sequelize.define(
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
+    familyId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: "Identificador del grupo familiar (hermanos comparten el mismo value)",
+    },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,

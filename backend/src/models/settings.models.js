@@ -24,6 +24,11 @@ const Setting = sequelize.define(
       allowNull: false,
       defaultValue: 20000,
     },
+    siblingDiscount: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0,
+    },
     updatedBy: {
       type: DataTypes.UUID,
       allowNull: true,

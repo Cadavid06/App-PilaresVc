@@ -17,6 +17,10 @@ export default function PaymentsModals({ isOpen, onClose, membership }) {
   const monthlyFee = settings?.monthlyFee || 20000;
   const isExpired = membership.status === "Expirada";
   const hasLongDebt = currentDebt >= 6 * monthlyFee;
+  const totalAdjustments = membership.totalAdjustments || 0;
+  const totalFeeExpected = membership.totalFeeExpected || 0;
+  const totalPaid = membership.totalPaid || 0;
+  const siblingDiscount = membership.siblingDiscount || 0;
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -52,9 +56,35 @@ export default function PaymentsModals({ isOpen, onClose, membership }) {
           </div>
 
           <div className="bg-zinc-700/30 rounded-xl p-4 border border-zinc-600/30 mb-4">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-300 text-sm">Deuda actual:</span>
-              <span className="text-red-400 font-bold text-lg">${currentDebt.toLocaleString()}</span>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300 text-sm">Mensualidades facturadas:</span>
+                <span className="text-gray-400 text-sm">${totalFeeExpected.toLocaleString()}</span>
+              </div>
+              {totalAdjustments !== 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-300 text-sm">Ajustes de cobro:</span>
+                  <span className={`text-sm font-semibold ${totalAdjustments < 0 ? "text-green-400" : "text-red-400"}`}>
+                    {totalAdjustments < 0 ? "-" : "+"}${Math.abs(totalAdjustments).toLocaleString()}
+                  </span>
+                </div>
+              )}
+              {siblingDiscount > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-300 text-sm">Descuento hermano:</span>
+                  <span className="text-sm font-semibold text-green-400">
+                    -${siblingDiscount.toLocaleString()}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between items-center">
+                <span className="text-gray-300 text-sm">Total pagado:</span>
+                <span className="text-gray-400 text-sm">-${totalPaid.toLocaleString()}</span>
+              </div>
+              <div className="border-t border-zinc-600/30 pt-2 flex justify-between items-center">
+                <span className="text-white font-semibold">Deuda actual:</span>
+                <span className="text-red-400 font-bold text-lg">${currentDebt.toLocaleString()}</span>
+              </div>
             </div>
           </div>
 
