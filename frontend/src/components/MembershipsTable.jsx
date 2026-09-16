@@ -75,16 +75,6 @@ export default function MembershipsTable({
     setIsConfirmOpen(true);
   };
 
-  const getShortNameParts = (fullName) => {
-    const nameParts = fullName.split(' ');
-    if (nameParts.length >= 3) {
-      return [nameParts[0], nameParts[2]];
-    }
-    if (nameParts.length === 2) {
-      return [nameParts[0], nameParts[1]];
-    }
-    return [fullName];
-  };
 
   return (
     <>
@@ -115,7 +105,6 @@ export default function MembershipsTable({
             </thead>
             <tbody className="divide-y divide-zinc-700/50">
               {membership.map((m, index) => {
-                const shortNameParts = getShortNameParts(m.clientName);
                 const actualId = m.id || m._id;
                 return (
                   <React.Fragment key={actualId}>
@@ -129,17 +118,16 @@ export default function MembershipsTable({
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <div className="font-semibold text-white text-sm md:hidden flex items-center justify-between w-full">
-                            <div>
-                              {shortNameParts.length > 1 ? (
-                                <>
-                                  <p className="leading-tight">{shortNameParts[0]}</p>
-                                  <p className="leading-tight">{shortNameParts[1]}</p>
-                                </>
-                              ) : (
-                                <p className="leading-tight">{shortNameParts[0]}</p>
-                              )}
+                            <div className="truncate max-w-[160px] sm:max-w-[200px]">
+                              <p className="leading-tight truncate">{m.clientName}</p>
                             </div>
-                            <ChevronDown size={16} className={`text-gray-400 transition-transform ml-2 ${expandedRow === actualId ? 'rotate-180' : ''}`} />
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); toggleRow(actualId); }}
+                              className="p-2 -mr-2 text-gray-400 hover:text-white"
+                              aria-label="Expandir fila"
+                            >
+                              <ChevronDown size={20} className={`transition-transform ${expandedRow === actualId ? 'rotate-180' : ''}`} />
+                            </button>
                           </div>
                           <span className="font-semibold text-white hidden md:block">
                             {m.clientName}
@@ -228,7 +216,7 @@ export default function MembershipsTable({
                                   if (m.deuda > (settings?.monthlyFee || 20000)) markAttendance(m); 
                                 }}
                                 aria-label="Ajustar deuda por inasistencia"
-                                title="Ajustar deuda por inasistencia"
+                                title={m.deuda > (settings?.monthlyFee || 20000) ? "Ajustar deuda por inasistencia" : "No hay deuda condonable (el mes actual no se puede condonar)"}
                                 disabled={m.deuda <= (settings?.monthlyFee || 20000)}
                                 className={`flex items-center gap-1 border px-3 py-2 sm:px-2 sm:py-1 rounded-lg transition-all duration-200 font-medium text-sm ${
                                   m.deuda > (settings?.monthlyFee || 20000)

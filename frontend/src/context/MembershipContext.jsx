@@ -130,7 +130,7 @@ export const MembershipProvider = ({ children }) => {
 
   const addPayments = async (id, amount) => {
     try {
-      const res = await addPaymentsRequest(id, amount);
+      const res = await addPaymentsRequest(id, { amount: Number(amount) });
       setMembership((prev) => prev.map((m) => (m.id === id || m._id === id ? res.data : m)));
     } catch (error) {
       console.error("Error add payments:", error);

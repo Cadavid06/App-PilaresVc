@@ -3,6 +3,28 @@
 Todas las modificaciones relevantes del proyecto quedan documentadas aquí, agrupadas por bloque/versión.
 
 ---
+## Bloque 12 — Correcciones de QA Final en Producción (16/09/2026)
+
+### Problemas resueltos
+
+- **HTTP 500 al Registrar Pago:** El modal de pagos (`PaymentsModals`) estaba enviando el monto como un número primitivo en lugar de un objeto. Esto causaba que el backend recibiera `undefined` y el servidor fallara (`HTTP 500`). Se envolvió el monto en un objeto `{ amount }` dentro del contexto `MembershipContext` para solucionarlo.
+- **Valores negativos (Jugador Antiguo):** Los campos "Deuda total" y "Abono inicial" permitían guardar valores negativos y corrompían el cálculo de deuda. Se añadió una validación estricta (`min: 0`) en React Hook Form.
+- **Sanitización de caracteres especiales en tiempo real:** Los inputs de Nombre, Documento y Teléfono bloqueaban el guardado pero no borraban los caracteres inválidos (ej. `@@@`) visualmente de la pantalla. Se incorporó limpieza inmediata (`onInput`) por expresiones regulares.
+- **Acciones truncadas en vista móvil:** En dispositivos móviles, a veces no se expandía la tabla al tocar una fila debido a problemas de propagación táctil. El botón del chevron móvil se configuró como el blanco exacto del toque para evitar fallas. Además, se añadió truncamiento CSS al nombre completo (evitando la anterior partición confusa de nombres).
+- **Retroalimentación visual UX:** 
+  - Se agregó estado de carga (`Guardando...`) en la página de Configuración al guardar valores económicos.
+  - El botón "Ajustar Deuda" ahora muestra un `title` explicativo cuando se deshabilita porque el jugador no tiene meses condonables.
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `frontend/src/context/MembershipContext.jsx` | Modificación de `addPayments` para encapsular la solicitud de red. |
+| `frontend/src/pages/MembershipFormPage.jsx` | Agregadas validaciones estrictas y sanitización en vivo. |
+| `frontend/src/components/MembershipsTable.jsx` | Mejoras de UX móvil y área táctil del desplegable. |
+| `frontend/src/pages/SettingsPage.jsx` | Agregado estado de carga (`isSaving`) en el botón de guardar. |
+
+---
 
 ## Bloque 11 — Fixes de QA en Producción (16/09/2026)
 

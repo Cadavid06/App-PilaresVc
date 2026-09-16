@@ -13,6 +13,7 @@ function SettingsPage() {
     siblingDiscount: 0,
   });
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -31,7 +32,9 @@ function SettingsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSaving(true);
     const result = await updateSettings(form);
+    setIsSaving(false);
     if (result.success) {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -155,9 +158,14 @@ function SettingsPage() {
           <div className="flex gap-3 pt-6">
             <button
               type="submit"
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold transition-all duration-200 shadow-lg shadow-red-500/25"
+              disabled={isSaving}
+              className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg ${
+                isSaving
+                  ? "bg-zinc-600 text-gray-300 cursor-not-allowed"
+                  : "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-red-500/25"
+              }`}
             >
-              Guardar cambios
+              {isSaving ? "Guardando..." : "Guardar cambios"}
             </button>
             <button
               type="button"
