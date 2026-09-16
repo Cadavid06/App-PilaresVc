@@ -16,7 +16,10 @@ function MembershipFormPage() {
   const [isNewPlayer, setIsNewPlayer] = useState(true);
 
   const debtAmount = watch("debtAmount") || 0;
-  const monthlyFee = settings?.monthlyFee || 20000;
+  const siblingDiscount = watch("siblingDiscount");
+  const monthlyFee = siblingDiscount
+    ? (settings?.siblingMonthlyFee || settings?.monthlyFee || 20000)
+    : (settings?.monthlyFee || 20000);
   const inscriptionFee = settings?.inscriptionFee || 15000;
 
   // Total = deuda que digita el admin + mes actual (automático)
@@ -99,6 +102,18 @@ function MembershipFormPage() {
               </p>
             )}
 
+            <label className="flex items-start gap-3 mt-4 cursor-pointer">
+              <input
+                type="checkbox"
+                {...register("siblingDiscount")}
+                className="mt-1 h-4 w-4 accent-red-500"
+              />
+              <span className="text-sm text-gray-300">
+                Aplicar tarifa de hermanos
+                <span className="block text-xs text-gray-500">Usa la tarifa familiar definida en Configuración.</span>
+              </span>
+            </label>
+
             {/* Resumen de cobro */}
             <div className="mt-3 bg-zinc-700/40 rounded-lg p-3 border border-zinc-600/30">
               <p className="text-xs text-gray-300 mb-1 font-semibold">Resumen de cobro:</p>
@@ -126,7 +141,10 @@ function MembershipFormPage() {
               <input
                 type="number"
                 placeholder="Ej: 80000"
-                {...register("debtAmount")}
+                {...register("debtAmount", {
+                  min: { value: 0, message: "La deuda no puede ser negativa" },
+                  valueAsNumber: true,
+                })}
                 className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
               />
               <p className="text-xs text-gray-400 mt-1">
@@ -143,6 +161,7 @@ function MembershipFormPage() {
               placeholder="Nombre completo"
               {...register("clientName", {
                 required: "El nombre es obligatorio",
+                pattern: { value: /^[\p{L} .'-]{2,100}$/u, message: "Usa solo letras y separadores válidos" },
               })}
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
@@ -196,6 +215,7 @@ function MembershipFormPage() {
               placeholder="Número de documento"
               {...register("clientDocument", {
                 required: "El documento es obligatorio",
+                pattern: { value: /^[A-Za-z0-9 .-]{4,30}$/, message: "El documento contiene caracteres inválidos" },
               })}
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
@@ -212,6 +232,7 @@ function MembershipFormPage() {
               placeholder="Teléfono"
               {...register("clientPhone", {
                 required: "El teléfono es obligatorio",
+                pattern: { value: /^[0-9+() -]{7,20}$/, message: "El teléfono contiene caracteres inválidos" },
               })}
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
@@ -260,7 +281,10 @@ function MembershipFormPage() {
               <input
                 type="number"
                 placeholder="Ej: 20000"
-                {...register("amount")}
+                {...register("amount", {
+                  min: { value: 0, message: "El abono no puede ser negativo" },
+                  valueAsNumber: true,
+                })}
                 className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
               />
               <p className="text-xs text-gray-400 mt-1">

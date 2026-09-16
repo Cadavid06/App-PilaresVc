@@ -24,6 +24,11 @@ const Setting = sequelize.define(
       allowNull: false,
       defaultValue: 20000,
     },
+    siblingMonthlyFee: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 25000,
+    },
     updatedBy: {
       type: DataTypes.INTEGER,
       allowNull: true,

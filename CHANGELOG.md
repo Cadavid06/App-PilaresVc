@@ -4,6 +4,48 @@ Todas las modificaciones relevantes del proyecto quedan documentadas aquí, agru
 
 ---
 
+## Bloque 5 — Registro antiguo, hermanos y trazabilidad financiera (16/09/2026)
+
+### Cambios realizados
+
+- Se formalizó el registro de jugadores antiguos: la deuda histórica digitada y la mensualidad actual se conservan como componentes separados del total esperado; el abono inicial se registra como pago independiente y determina el estado resultante.
+- Se añadió una tarifa mensual configurable para hermanos y una marca por jugador para aplicar dicha tarifa, manteniendo la libertad del admin para cambiar el valor desde Configuración.
+- Se validan en backend y frontend los importes no negativos y los caracteres de nombre, documento y teléfono.
+- Las condonaciones ahora exigen motivo y se registran en `debt_adjustments` con monto firmado, usuario, fecha y jugador para trazabilidad.
+
+### Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `backend/src/models/debtAdjustment.models.js` | Historial auditable de condonaciones/ajustes de deuda. |
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `backend/src/models/settings.models.js` | Nueva tarifa `siblingMonthlyFee`. |
+| `backend/src/models/memberShip.models.js` | Marca `siblingDiscount` por jugador. |
+| `backend/src/services/billing.service.js` | Aplica tarifa familiar durante facturación lazy. |
+| `backend/src/controllers/membership.controllers.js` | Validaciones, tarifa familiar, estados y auditoría de condonaciones. |
+| `backend/src/controllers/settings.controllers.js` | Lee y guarda tarifa de hermanos. |
+| `frontend/src/pages/MembershipFormPage.jsx` | Selector de hermanos y validación de importes/datos. |
+| `frontend/src/pages/SettingsPage.jsx` | Campo editable de mensualidad familiar. |
+| `frontend/src/components/AttendanceModal.jsx` | Motivo obligatorio para condonar. |
+| `frontend/src/context/MembershipContext.jsx` | Default de tarifa familiar. |
+
+### Acciones manuales requeridas
+
+- Desplegar backend y frontend normalmente. `sequelize.sync({ force: false })` creará las nuevas columnas y tabla sin borrar datos.
+- Definir en Configuración la tarifa real de hermanos antes de marcar jugadores con ese beneficio.
+
+### Verificaciones realizadas
+
+- `node --check` sobre los archivos backend modificados.
+- `npm run build` del frontend exitoso.
+
+
+---
+
 ## Bloque 1 — Facturación, estados y configuración (14/09/2026)
 
 ### Reglas de negocio definidas (aprobadas por el cliente)

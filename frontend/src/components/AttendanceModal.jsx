@@ -13,6 +13,7 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
   } = useForm({
     defaultValues: {
       amountToForgive: 0,
+      reason: "",
     }
   });
   
@@ -28,7 +29,7 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
 
   useEffect(() => {
     if (isOpen) {
-      reset({ amountToForgive: 0 });
+      reset({ amountToForgive: 0, reason: "" });
       setSuccessMsg("");
     }
   }, [isOpen, reset]);
@@ -38,6 +39,7 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
       setSuccessMsg("");
       const payload = {
         amountToForgive: parseFloat(data.amountToForgive) || 0,
+        reason: data.reason.trim(),
       };
 
       const res = await adjustDebt(actualId, payload);
@@ -101,6 +103,16 @@ export default function AttendanceModal({ isOpen, onClose, membership }) {
               <p className="text-xs text-gray-400 mt-2">
                 Máximo permitido: <strong>${(currentDebt - monthlyFee).toLocaleString()}</strong> (el mes actual no se condona).
               </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Motivo del ajuste</label>
+              <input
+                type="text"
+                placeholder="Ej: inasistencia justificada"
+                {...register("reason", { required: "Especifica el motivo del ajuste" })}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              />
             </div>
 
             <div className="bg-black/30 border border-zinc-800 rounded-xl p-4 flex justify-between items-center">

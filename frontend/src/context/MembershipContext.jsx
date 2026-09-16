@@ -14,6 +14,7 @@ const DEFAULT_SETTINGS = {
   monthlyFee: 20000,
   inscriptionFee: 15000,
   reactivationFee: 20000,
+  siblingMonthlyFee: 25000,
 };
 
 const MembershipContext = createContext();

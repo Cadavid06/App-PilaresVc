@@ -6,6 +6,7 @@ const DEFAULTS = {
   monthlyFee: 20000,
   inscriptionFee: 15000,
   reactivationFee: 20000,
+  siblingMonthlyFee: 25000,
 };
 
 // ─── Helpers de fecha (trabajan con strings DATEONLY de la DB) ──────────────
@@ -37,6 +38,7 @@ export async function getSettings() {
     monthlyFee: row.monthlyFee,
     inscriptionFee: row.inscriptionFee,
     reactivationFee: row.reactivationFee,
+    siblingMonthlyFee: row.siblingMonthlyFee,
   };
 }
 
@@ -75,7 +77,10 @@ export async function applyBillingIfDue(member, settings) {
   const MAX_CATCH_UP = 60;
 
   while (cursor.key <= todayKey && billed < MAX_CATCH_UP) {
-    member.totalFeeExpected += settings.monthlyFee;
+    const monthlyCharge = member.siblingDiscount
+      ? settings.siblingMonthlyFee
+      : settings.monthlyFee;
+    member.totalFeeExpected += monthlyCharge;
     cursor = nextMonthFirst(cursor);
     billed++;
   }
@@ -87,7 +92,8 @@ export async function applyBillingIfDue(member, settings) {
     totalFeeExpected: member.totalFeeExpected,
     totalPaid: member.totalPaid,
   });
-  const status = statusFromDebt(deuda, settings.monthlyFee);
+  const monthlyFee = member.siblingDiscount ? settings.siblingMonthlyFee : settings.monthlyFee;
+  const status = statusFromDebt(deuda, monthlyFee);
 
   await member.update({
     totalFeeExpected: member.totalFeeExpected,
