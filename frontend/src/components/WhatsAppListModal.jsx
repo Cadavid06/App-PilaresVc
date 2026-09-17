@@ -70,9 +70,9 @@ export default function WhatsAppListModal({ isOpen, onClose, memberships, monthl
   const text = useMemo(() => {
     const header = getCycleLabel(cycle).replace(/^./, (letter) => letter.toUpperCase());
     const lines = rows.map(({ member, paid, debt, status }) => {
-      if (status === "paid" || status === "pending") return member.clientName;
+      if (status === "paid") return member.clientName;
       if (status === "partial") return `${member.clientName} - Abonó ${formatCurrency(paid)}`;
-      if (status === "overdue") return `${member.clientName} - Debe ${formatCurrency(debt)}`;
+      if (status === "overdue" || status === "pending") return `${member.clientName} - Debe ${formatCurrency(debt)}`;
       return member.clientName;
     });
     return [header, ...lines].join("\n");
