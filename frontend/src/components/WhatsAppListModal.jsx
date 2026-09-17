@@ -44,8 +44,19 @@ export default function WhatsAppListModal({ isOpen, onClose, memberships, monthl
       const paid = payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
       const debt = Number(member.deuda || 0);
       const hasPayment = paid > 0;
-      const isCurrentMonthPaid = debt <= 0;
-      const status = isCurrentMonthPaid ? "paid" : hasPayment ? "partial" : member.status === "Expirada" ? "overdue" : "none";
+      const isCurrentCycle = cycle === getCycleKey();
+      
+      let status = "none";
+      if (isCurrentCycle) {
+        status = debt <= 0 ? "paid" 
+          : hasPayment ? "partial" 
+          : member.status === "Expirada" ? "overdue" 
+          : "pending";
+      } else {
+        if (hasPayment) {
+          status = paid >= monthlyFee ? "paid" : "partial";
+        }
+      }
       return { member, paid, debt, status };
     })
     .filter(({ status }) => {
@@ -53,13 +64,13 @@ export default function WhatsAppListModal({ isOpen, onClose, memberships, monthl
       if (paymentFilter === "partial") return status === "partial";
       if (paymentFilter === "overdue") return status === "overdue";
       if (paymentFilter === "payments") return status === "paid" || status === "partial";
-      return true;
-    }), [memberships, gender, category, cycle, paymentFilter]);
+      return status !== "none";
+    }), [memberships, gender, category, cycle, paymentFilter, monthlyFee]);
 
   const text = useMemo(() => {
     const header = getCycleLabel(cycle).replace(/^./, (letter) => letter.toUpperCase());
     const lines = rows.map(({ member, paid, debt, status }) => {
-      if (status === "paid") return member.clientName;
+      if (status === "paid" || status === "pending") return member.clientName;
       if (status === "partial") return `${member.clientName} - Abonó ${formatCurrency(paid)}`;
       if (status === "overdue") return `${member.clientName} - Debe ${formatCurrency(debt)}`;
       return member.clientName;
