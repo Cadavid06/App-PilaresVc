@@ -4,6 +4,37 @@ Todas las modificaciones relevantes del proyecto quedan documentadas aquí, agru
 
 ---
 
+## Lista WhatsApp — Generador de listados copiables (17/09/2026)
+
+### Cambios realizados
+
+- Se añadió un generador de texto plano para compartir por WhatsApp desde la tabla de membresías.
+- Permite filtrar por mes/ciclo, estado de pago (pagaron, abonaron, pagaron o abonaron, morosos y todos), género y categoría.
+- Los jugadores pagos aparecen solo con su nombre; los abonos muestran el monto abonado del ciclo y los morosos muestran la deuda actual.
+- El modal está optimizado para uso móvil como panel inferior y copia el resultado con un solo botón.
+
+### Archivos creados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `frontend/src/components/WhatsAppListModal.jsx` | Modal responsive para generar y copiar listados de pagos. |
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `frontend/src/pages/MembershipsPage.jsx` | Botón Lista WhatsApp, apertura del modal y envío de membresías/configuración. |
+
+### Acciones manuales requeridas
+
+- Ninguna. La funcionalidad usa los pagos ya cargados por la API.
+
+### Verificaciones realizadas
+
+- Pendiente ejecutar build y verificación visual en navegador.
+
+---
+
 ## Bloque 5 — Registro antiguo, hermanos y trazabilidad financiera (16/09/2026)
 
 ### Cambios realizados
