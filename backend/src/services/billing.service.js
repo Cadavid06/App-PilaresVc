@@ -50,10 +50,9 @@ export async function getSettings() {
 
 // ─── Cálculo de deuda ──────────────────────────────────────────────────────
 export function calcDeuda(plain, totalAdjustments = 0, siblingDiscount = 0) {
-  // Se elimina el Math.max para permitir saldos a favor (negativos).
-  // El descuento de hermanos ya no se resta aquí de forma global,
-  // sino que se aplica mes a mes en applyBillingIfDue.
-  return (plain.totalFeeExpected || 0) + totalAdjustments - (plain.totalPaid || 0);
+  // Se resta siblingDiscount como un crédito flotante global,
+  // comportamiento esperado por la lógica de negocio al agregar/quitar grupo familiar.
+  return (plain.totalFeeExpected || 0) + totalAdjustments - (plain.totalPaid || 0) - siblingDiscount;
 }
 
 // ─── Total de ajustes de un jugador ───────────────────────────────────────
