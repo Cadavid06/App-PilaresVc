@@ -210,23 +210,30 @@ export default function MembershipsTable({
                                 <CreditCard size={16} className="sm:w-[14px] sm:h-[14px]" />
                                 <span className="hidden sm:inline">Pagar</span>
                               </button>
-                              <button
-                                onClick={(e) => { 
-                                  e.stopPropagation(); 
-                                  if (m.deuda > (settings?.monthlyFee || 20000)) markAttendance(m); 
-                                }}
-                                aria-label="Ajustar deuda por inasistencia"
-                                title={m.deuda > (settings?.monthlyFee || 20000) ? "Ajustar deuda por inasistencia" : "No hay deuda condonable (el mes actual no se puede condonar)"}
-                                // disabled={m.deuda <= (settings?.monthlyFee || 20000)}
-                                className={`flex items-center gap-1 border px-3 py-2 sm:px-2 sm:py-1 rounded-lg transition-all duration-200 font-medium text-sm ${
-                                  m.deuda > (settings?.monthlyFee || 20000)
-                                    ? "bg-indigo-500/20 hover:bg-indigo-500/30 border-indigo-500/30 text-indigo-400"
-                                    : "bg-zinc-700/20 border-zinc-700/30 text-gray-500 cursor-not-allowed opacity-50"
-                                }`}
-                              >
-                                <Calendar size={16} className="sm:w-[14px] sm:h-[14px]" />
-                                <span className="hidden sm:inline">Ajustar Deuda</span>
-                              </button>
+                              <div className="relative group inline-block">
+                                <button
+                                  onClick={(e) => { 
+                                    e.stopPropagation(); 
+                                    if (m.deuda > (settings?.monthlyFee || 20000)) markAttendance(m); 
+                                  }}
+                                  aria-label="Ajustar deuda por inasistencia"
+                                  className={`flex items-center gap-1 border px-3 py-2 sm:px-2 sm:py-1 rounded-lg transition-all duration-200 font-medium text-sm ${
+                                    m.deuda > (settings?.monthlyFee || 20000)
+                                      ? "bg-indigo-500/20 hover:bg-indigo-500/30 border-indigo-500/30 text-indigo-400"
+                                      : "bg-zinc-700/20 border-zinc-700/30 text-gray-500 cursor-not-allowed opacity-50"
+                                  }`}
+                                >
+                                  <Calendar size={16} className="sm:w-[14px] sm:h-[14px]" />
+                                  <span className="hidden sm:inline">Ajustar Deuda</span>
+                                </button>
+                                {m.deuda <= (settings?.monthlyFee || 20000) && (
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs px-3 py-2 bg-zinc-900 border border-zinc-700/50 text-gray-300 text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none shadow-xl">
+                                    No hay deuda condonable (el mes actual no se puede condonar)
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px] border-4 border-transparent border-t-zinc-700/50"></div>
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-[2px] border-4 border-transparent border-t-zinc-900"></div>
+                                  </div>
+                                )}
+                              </div>
                               <button
                                 onClick={(e) => { e.stopPropagation(); openAdjustments(m); }}
                                 aria-label="Gestión de ajustes"
@@ -283,7 +290,10 @@ export default function MembershipsTable({
       <ConfirmModal
         isOpen={isConfirmOpen}
         onClose={() => setIsConfirmOpen(false)}
-        onConfirm={() => deleteMembership(membershipToDelete)}
+        onConfirm={async () => {
+          await deleteMembership(membershipToDelete);
+          setIsConfirmOpen(false);
+        }}
         message="¿Estás seguro que deseas eliminar esta membresía? Esta acción no se puede deshacer."
       />
       {/* Modal de asistencia */}

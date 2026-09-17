@@ -3,6 +3,23 @@
 Todas las modificaciones relevantes del proyecto quedan documentadas aquí, agrupadas por bloque/versión.
 
 ---
+## Bloque 14 — Correcciones Post-QA (17/09/2026)
+
+### Problemas resueltos
+
+- **Bloqueo de interfaz al eliminar (UI/UX):** Al confirmar la eliminación de un jugador en la tabla, el modal de confirmación no se cerraba automáticamente, dejando la pantalla oscurecida e inoperable. Se corrigió forzando el cierre del modal (`setIsConfirmOpen(false)`) tras la promesa de eliminación.
+- **Deuda desactualizada tras ajustes (Lógica):** Al registrar o eliminar un "Ajuste de Cobro" (ej. penalidad), el historial reflejaba el cambio pero la deuda principal en la tabla no se refrescaba hasta recargar la página. Se implementó una recarga en segundo plano (`getMemberships()`) inmediatamente después de modificar los ajustes.
+- **Tooltip de deuda invisible (UX):** El tooltip nativo (`title`) seguía sin mostrarse de forma confiable sobre botones con eventos controlados. Se construyó un tooltip 100% visual y robusto usando clases de Tailwind CSS (`group-hover`), garantizando que siempre se vea el motivo por el cual no se puede condonar el mes en curso.
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `frontend/src/components/MembershipsTable.jsx` | Modificado `onConfirm` para cerrar el modal y reemplazado el tooltip nativo por uno de Tailwind. |
+| `frontend/src/components/AdjustmentsModal.jsx` | Importado y ejecutado `getMemberships()` al guardar o borrar un ajuste. |
+
+---
+
 ## Bloque 13 — Ajustes Finales y Permisos (16/09/2026)
 
 ### Problemas resueltos

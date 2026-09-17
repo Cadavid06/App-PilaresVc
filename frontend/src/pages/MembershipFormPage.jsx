@@ -22,7 +22,7 @@ function MembershipFormPage() {
   // Total = deuda que digita el admin + mes actual (automático)
   const debtTotal = isNewPlayer
     ? monthlyFee + inscriptionFee
-    : Number(debtAmount) + monthlyFee;
+    : Math.max(0, Number(debtAmount) || 0) + monthlyFee;
 
   const onSubmit = handleSubmit(async (data) => {
     data.isNewPlayer = isNewPlayer;

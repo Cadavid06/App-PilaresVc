@@ -4,6 +4,7 @@ import {
   createAdjustmentRequest,
   deleteAdjustmentRequest,
 } from "../api/billingAdjustments";
+import { useMembership } from "../context/MembershipContext";
 import { X, Plus, Trash2, Users, AlertCircle } from "lucide-react";
 
 const TYPES = [
@@ -13,6 +14,7 @@ const TYPES = [
 ];
 
 export default function AdjustmentsModal({ isOpen, onClose, membership }) {
+  const { getMemberships } = useMembership();
   const [adjustments, setAdjustments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -75,6 +77,7 @@ export default function AdjustmentsModal({ isOpen, onClose, membership }) {
       setSuccess(data.message);
       setForm((f) => ({ ...f, amount: "", description: "", applyToSiblings: false }));
       loadAdjustments();
+      await getMemberships();
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError(err.response?.data?.message || "Error al crear ajuste");
@@ -86,6 +89,7 @@ export default function AdjustmentsModal({ isOpen, onClose, membership }) {
     try {
       await deleteAdjustmentRequest(id);
       loadAdjustments();
+      await getMemberships();
     } catch (err) {
       console.error(err);
     }
