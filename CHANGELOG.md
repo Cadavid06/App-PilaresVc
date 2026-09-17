@@ -31,6 +31,12 @@ Todas las modificaciones relevantes del proyecto quedan documentadas aquí, agru
 
 ### Verificaciones realizadas
 
+- Se cambió el selector de mes a un input nativo `type="month"`, permitiendo consultar cualquier mes pasado o futuro.
+- Se corrigió el cálculo de estados: los ciclos históricos usan pagos registrados en ese mes, los ciclos futuros no muestran jugadores y "Todos" conserva todos los jugadores del ciclo disponible.
+- Se muestra el texto vacío sin encabezado cuando no existen resultados, evitando copiar una lista engañosa.
+
+### Verificaciones realizadas
+
 - Pendiente ejecutar build y verificación visual en navegador.
 
 ---

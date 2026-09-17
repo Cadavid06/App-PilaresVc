@@ -25,16 +25,6 @@ const getPaymentsForCycle = (member, cycle) =>
 
 export default function WhatsAppListModal({ isOpen, onClose, memberships, monthlyFee }) {
   const currentCycle = getCycleKey();
-  const availableCycles = useMemo(() => {
-    const cycles = new Set([currentCycle]);
-    memberships.forEach((member) => {
-      (member.payments || []).forEach((payment) => {
-        const paymentDate = payment.date || new Date(payment.year, (payment.month || 1) - 1);
-        cycles.add(getCycleKey(paymentDate));
-      });
-    });
-    return [...cycles].sort().reverse();
-  }, [memberships, currentCycle]);
   const [cycle, setCycle] = useState(currentCycle);
   const [paymentFilter, setPaymentFilter] = useState("paid");
   const [gender, setGender] = useState("all");
@@ -46,27 +36,33 @@ export default function WhatsAppListModal({ isOpen, onClose, memberships, monthl
     [memberships]
   );
 
-  const rows = useMemo(() => memberships
-    .filter((member) => gender === "all" || member.gender === gender)
-    .filter((member) => category === "all" || member.category === category)
-    .map((member) => {
-      const payments = getPaymentsForCycle(member, cycle);
-      const paid = payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
-      const debt = Number(member.deuda || 0);
-      const hasPayment = paid > 0;
-      const isCurrentMonthPaid = debt <= 0;
-      const status = isCurrentMonthPaid ? "paid" : hasPayment ? "partial" : member.status === "Expirada" ? "overdue" : "none";
-      return { member, paid, debt, status };
-    })
-    .filter(({ status }) => {
-      if (paymentFilter === "paid") return status === "paid";
-      if (paymentFilter === "partial") return status === "partial";
-      if (paymentFilter === "overdue") return status === "overdue";
-      if (paymentFilter === "payments") return status === "paid" || status === "partial";
-      return true;
-    }), [memberships, gender, category, cycle, paymentFilter]);
+  const rows = useMemo(() => {
+    const isFuture = cycle > currentCycle;
+    return memberships
+      .filter((member) => gender === "all" || member.gender === gender)
+      .filter((member) => category === "all" || member.category === category)
+      .map((member) => {
+        const payments = getPaymentsForCycle(member, cycle);
+        const paid = payments.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
+        const debt = Number(member.deuda || 0);
+        const fee = Math.max(0, Number(monthlyFee || 0) - Number(member.siblingDiscount || 0));
+        const isPaid = isFuture ? false : cycle === currentCycle ? debt <= 0 : paid >= fee && fee > 0;
+        const isPartial = !isFuture && paid > 0 && !isPaid;
+        const isOverdue = !isFuture && cycle === currentCycle && debt > fee;
+        const status = isPaid ? "paid" : isPartial ? "partial" : isOverdue ? "overdue" : "none";
+        return { member, paid, debt, status };
+      })
+      .filter(({ status }) => {
+        if (paymentFilter === "paid") return status === "paid";
+        if (paymentFilter === "partial") return status === "partial";
+        if (paymentFilter === "overdue") return status === "overdue";
+        if (paymentFilter === "payments") return status === "paid" || status === "partial";
+        return !isFuture;
+      });
+  }, [memberships, gender, category, cycle, paymentFilter, monthlyFee, currentCycle]);
 
   const text = useMemo(() => {
+    if (!rows.length) return "No hay jugadores para estos filtros.";
     const header = getCycleLabel(cycle).replace(/^./, (letter) => letter.toUpperCase());
     const lines = rows.map(({ member, paid, debt, status }) => {
       if (status === "paid") return member.clientName;
@@ -104,9 +100,7 @@ export default function WhatsAppListModal({ isOpen, onClose, memberships, monthl
 
         <div className="grid gap-4 p-5 sm:grid-cols-3 sm:p-6">
           <label className="text-xs font-semibold text-zinc-400">Mes
-            <select value={cycle} onChange={(event) => setCycle(event.target.value)} className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-sm text-white">
-              {availableCycles.map((value) => <option key={value} value={value}>{getCycleLabel(value)}</option>)}
-            </select>
+            <input type="month" value={cycle} onChange={(event) => setCycle(event.target.value)} className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-sm text-white" aria-label="Mes de la lista" />
           </label>
           <label className="text-xs font-semibold text-zinc-400">Género
             <select value={gender} onChange={(event) => setGender(event.target.value)} className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2.5 text-sm text-white">
