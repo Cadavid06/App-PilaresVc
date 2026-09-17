@@ -6,6 +6,7 @@ import {
 } from "../api/billingAdjustments";
 import { useMembership } from "../context/MembershipContext";
 import { X, Plus, Trash2, Users, AlertCircle } from "lucide-react";
+import Swal from "sweetalert2";
 
 const TYPES = [
   { value: "penalidad", label: "Penalidad", color: "text-red-400" },
@@ -85,7 +86,20 @@ export default function AdjustmentsModal({ isOpen, onClose, membership }) {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("¿Eliminar este ajuste?")) return;
+    const result = await Swal.fire({
+      title: "¿Eliminar este ajuste?",
+      text: "Esta acción no se puede deshacer",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#3f3f46",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+      background: "#18181b",
+      color: "#fff"
+    });
+
+    if (!result.isConfirmed) return;
     try {
       await deleteAdjustmentRequest(id);
       loadAdjustments();

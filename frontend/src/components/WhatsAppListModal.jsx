@@ -62,7 +62,7 @@ export default function WhatsAppListModal({ isOpen, onClose, memberships, monthl
     .filter(({ status }) => {
       if (paymentFilter === "paid") return status === "paid";
       if (paymentFilter === "partial") return status === "partial";
-      if (paymentFilter === "overdue") return status === "overdue";
+      if (paymentFilter === "overdue") return status === "overdue" || status === "pending";
       if (paymentFilter === "payments") return status === "paid" || status === "partial";
       return status !== "none";
     }), [memberships, gender, category, cycle, paymentFilter, monthlyFee]);
