@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus, List } from "lucide-react";
 import MembershipsTable from "../components/MembershipsTable";
+import WhatsAppListModal from "../components/WhatsAppListModal";
 import { useMembership } from "../context/MembershipContext";
 
 function MembershipPage() {
-  const { getMemberships, membership, isLoading } = useMembership();
+  const { getMemberships, membership, isLoading, settings } = useMembership();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterGender, setFilterGender] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [isWhatsAppListOpen, setIsWhatsAppListOpen] = useState(false);
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,13 +54,23 @@ function MembershipPage() {
               {filteredMemberships.length} jugador{filteredMemberships.length !== 1 ? 'es' : ''} filtrado{filteredMemberships.length !== 1 ? 's' : ''} en el registro
             </p>
           </div>
-          <Link
-            to="/add-memberships"
-            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-all"
-          >
-            <Plus size={16} />
-            Nuevo jugador
-          </Link>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <button
+              type="button"
+              onClick={() => setIsWhatsAppListOpen(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-400 transition-all hover:bg-emerald-500/20"
+            >
+              <List size={16} />
+              Lista WhatsApp
+            </button>
+            <Link
+              to="/add-memberships"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-red-700"
+            >
+              <Plus size={16} />
+              Nuevo jugador
+            </Link>
+          </div>
         </div>
 
         <div className="bg-zinc-800/60 border border-zinc-700/50 rounded-xl p-3 sm:p-4 mb-6">
@@ -173,6 +185,12 @@ function MembershipPage() {
           )}
         </div>
       </div>
+      <WhatsAppListModal
+        isOpen={isWhatsAppListOpen}
+        onClose={() => setIsWhatsAppListOpen(false)}
+        memberships={membership}
+        monthlyFee={settings?.monthlyFee || 20000}
+      />
     </main>
   );
 }
