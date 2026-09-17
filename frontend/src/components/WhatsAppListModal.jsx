@@ -50,8 +50,7 @@ export default function WhatsAppListModal({ isOpen, onClose, memberships, monthl
       if (isCurrentCycle) {
         status = debt <= 0 ? "paid" 
           : hasPayment ? "partial" 
-          : member.status === "Expirada" ? "overdue" 
-          : "pending";
+          : "overdue";
       } else {
         if (hasPayment) {
           status = paid >= monthlyFee ? "paid" : "partial";
@@ -62,7 +61,7 @@ export default function WhatsAppListModal({ isOpen, onClose, memberships, monthl
     .filter(({ status }) => {
       if (paymentFilter === "paid") return status === "paid";
       if (paymentFilter === "partial") return status === "partial";
-      if (paymentFilter === "overdue") return status === "overdue" || status === "pending";
+      if (paymentFilter === "overdue") return status === "overdue" || status === "partial";
       if (paymentFilter === "payments") return status === "paid" || status === "partial";
       return status !== "none";
     }), [memberships, gender, category, cycle, paymentFilter, monthlyFee]);
@@ -71,8 +70,12 @@ export default function WhatsAppListModal({ isOpen, onClose, memberships, monthl
     const header = getCycleLabel(cycle).replace(/^./, (letter) => letter.toUpperCase());
     const lines = rows.map(({ member, paid, debt, status }) => {
       if (status === "paid") return member.clientName;
-      if (status === "partial") return `${member.clientName} - Abonó ${formatCurrency(paid)}`;
-      if (status === "overdue" || status === "pending") return `${member.clientName} - Debe ${formatCurrency(debt)}`;
+      if (status === "partial") {
+        return paymentFilter === "partial" || paymentFilter === "payments"
+          ? `${member.clientName} - Abonó ${formatCurrency(paid)}`
+          : `${member.clientName} - Debe ${formatCurrency(debt)}`;
+      }
+      if (status === "overdue") return `${member.clientName} - Debe ${formatCurrency(debt)}`;
       return member.clientName;
     });
     return [header, ...lines].join("\n");
