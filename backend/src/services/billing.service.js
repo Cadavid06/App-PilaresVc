@@ -50,8 +50,10 @@ export async function getSettings() {
 
 // ─── Cálculo de deuda ──────────────────────────────────────────────────────
 export function calcDeuda(plain, totalAdjustments = 0, siblingDiscount = 0) {
-  const base = (plain.totalFeeExpected || 0) + totalAdjustments - (plain.totalPaid || 0);
-  return Math.max(0, base - siblingDiscount);
+  // Se elimina el Math.max para permitir saldos a favor (negativos).
+  // El descuento de hermanos ya no se resta aquí de forma global,
+  // sino que se aplica mes a mes en applyBillingIfDue.
+  return (plain.totalFeeExpected || 0) + totalAdjustments - (plain.totalPaid || 0);
 }
 
 // ─── Total de ajustes de un jugador ───────────────────────────────────────
@@ -108,9 +110,12 @@ export async function applyBillingIfDue(member, settings) {
   let billed = 0;
   let cursor = current;
   const MAX_CATCH_UP = 60;
+  
+  const discount = (member.familyId && settings.siblingDiscount > 0) ? settings.siblingDiscount : 0;
+  const netMonthlyFee = Math.max(0, settings.monthlyFee - discount);
 
   while (cursor.key <= todayKey && billed < MAX_CATCH_UP) {
-    member.totalFeeExpected += settings.monthlyFee;
+    member.totalFeeExpected += netMonthlyFee;
     cursor = nextMonthFirst(cursor);
     billed++;
   }

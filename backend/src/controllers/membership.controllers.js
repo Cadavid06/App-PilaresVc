@@ -426,7 +426,15 @@ export const updateUserData = async (req, res) => {
 
     await member.reload({ include: fullInclude });
     const plain = await enrichMember(toPlain(member));
-    plain.deuda = calcDeuda(plain);
+    
+    const settings = await getSettings();
+    const adj = await getAdjustmentsTotal(member.id);
+    const discount = (member.familyId && settings.siblingDiscount > 0) ? settings.siblingDiscount : 0;
+    
+    plain.deuda = calcDeuda(plain, adj, discount);
+    plain.status = statusFromDebt(plain.deuda, settings.monthlyFee);
+    plain.totalAdjustments = adj;
+    plain.siblingDiscount = discount;
 
     res.json({ message: "Datos del jugador actualizados correctamente", user: plain });
   } catch (error) {
