@@ -17,13 +17,20 @@ import PaymentsModals from "./PaymentsModals";
 import ConfirmModal from "./DeleteMembershipModal";
 import AttendanceModal from "./AttendanceModal";
 import AdjustmentsModal from "./AdjustmentsModal";
+import PlayerBottomSheet from "./PlayerBottomSheet";
+
+const MOBILE_STATUS_COLORS = {
+  Activa: { text: "text-emerald-400", dot: "bg-emerald-400" },
+  Pendiente: { text: "text-yellow-400", dot: "bg-yellow-400" },
+  Expirada: { text: "text-red-400", dot: "bg-red-400" },
+};
 
 export default function MembershipsTable({
   membership,
   currentPage,
   itemsPerPage,
 }) {
-  const { getMembershipById, deleteMembership, settings } = useMembership();
+  const { deleteMembership, settings } = useMembership();
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
   const [expandedRow, setExpandedRow] = useState(null);
@@ -39,14 +46,15 @@ export default function MembershipsTable({
   const [isModalOpenAttendance, setIsModalOpenAttendance] = useState(false);
   const [adjustments, setAdjustments] = useState(null);
   const [isModalOpenAdjustments, setIsModalOpenAdjustments] = useState(false);
+  const [sheetMember, setSheetMember] = useState(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const toggleRow = (id) => {
     setExpandedRow(expandedRow === id ? null : id);
   };
 
-  const getMembership = async (id) => {
-    const data = await getMembershipById(id);
-    setSelectedMembership(data);
+  const getMembership = (member) => {
+    setSelectedMembership(member);
     setIsModalOpenMembership(true);
   };
 
@@ -75,11 +83,17 @@ export default function MembershipsTable({
     setIsConfirmOpen(true);
   };
 
+  const openSheet = (member) => {
+    setSheetMember(member);
+    setIsSheetOpen(true);
+  };
+
 
   return (
     <>
       <div className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700/50 rounded-2xl shadow-2xl overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Vista Desktop (Tabla completa) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-white">
             <thead>
               <tr className="bg-gradient-to-r from-red-600/20 to-red-500/20 border-b border-red-500/30">
@@ -184,7 +198,7 @@ export default function MembershipsTable({
                         <td colSpan="7" className="px-6 py-4 bg-zinc-700/20">
                           <div className="flex flex-wrap gap-2">
                               <button
-                                onClick={(e) => { e.stopPropagation(); getMembership(actualId); }}
+                                onClick={(e) => { e.stopPropagation(); getMembership(m); }}
                                 aria-label="Ver detalles"
                                 title="Ver detalles"
                                 className="flex items-center gap-1 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 text-blue-400 px-3 py-2 sm:px-2 sm:py-1 rounded-lg transition-all duration-200 font-medium text-sm"
@@ -264,6 +278,54 @@ export default function MembershipsTable({
             </tbody>
           </table>
         </div>
+
+        {/* Vista Móvil (Cards minimalistas + Bottom Sheet) */}
+        <div className="md:hidden flex flex-col gap-3 p-3">
+          {membership.map((m) => {
+            const actualId = m.id || m._id;
+            const initials = (m.clientName || "")
+              .split(" ")
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((w) => w[0].toUpperCase())
+              .join("");
+            const sc = MOBILE_STATUS_COLORS[m.status] || MOBILE_STATUS_COLORS.Expirada;
+            return (
+              <button
+                key={`mobile-${actualId}`}
+                onClick={() => openSheet(m)}
+                className="flex items-center gap-3 rounded-2xl border border-zinc-700/50 bg-zinc-800/80 p-4 text-left transition-all active:scale-[0.98]"
+              >
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-700 text-sm font-black text-white">
+                  {initials}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-white">
+                    {m.clientName}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-gray-400">
+                    {m.category || "—"} · {m.gender || "—"}
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-1.5">
+                  <span
+                    className={`inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide ${sc.text}`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${sc.dot}`} />
+                    {m.status}
+                  </span>
+                  <span
+                    className={`text-sm font-bold ${
+                      m.deuda > 0 ? "text-red-400" : "text-emerald-400"
+                    }`}
+                  >
+                    {m.deuda > 0 ? `$${m.deuda.toLocaleString()}` : "$0"}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Modal ver */}
@@ -309,6 +371,20 @@ export default function MembershipsTable({
         isOpen={isModalOpenAdjustments}
         onClose={() => setIsModalOpenAdjustments(false)}
         membership={membership.find((m) => (m.id || m._id) === (adjustments?.id || adjustments?._id)) || adjustments}
+      />
+      {/* Hoja inferior móvil */}
+      <PlayerBottomSheet
+        member={sheetMember}
+        isOpen={isSheetOpen}
+        isAdmin={isAdmin}
+        canCondone={(sheetMember?.deuda || 0) > (settings?.monthlyFee || 20000)}
+        onClose={() => setIsSheetOpen(false)}
+        onView={getMembership}
+        onEdit={updateClient}
+        onPay={addPayments}
+        onCondone={markAttendance}
+        onAdjust={openAdjustments}
+        onDelete={confirmDelete}
       />
     </>
   );

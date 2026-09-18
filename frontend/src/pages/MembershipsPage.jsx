@@ -15,7 +15,7 @@ function MembershipPage() {
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     getMemberships();
@@ -150,37 +150,69 @@ function MembershipPage() {
                 itemsPerPage={itemsPerPage}
               />
 
-              {totalPages > 1 && (
-                <div className="flex justify-center mt-4 gap-1">
-                  <button
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((prev) => prev - 1)}
-                    className="px-3 py-1.5 rounded-lg text-sm bg-zinc-700/50 text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                  >
-                    ←
-                  </button>
-                  {[...Array(totalPages)].map((_, i) => (
+              <div className="flex flex-col items-center gap-3 mt-4">
+                {totalPages > 1 && (
+                  <div className="flex justify-center gap-1.5">
                     <button
-                      key={i}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${
-                        currentPage === i + 1
-                          ? "bg-red-600 text-white"
-                          : "bg-zinc-700/50 text-gray-400 hover:text-white"
-                      }`}
+                      disabled={currentPage === 1}
+                      aria-label="Página anterior"
+                      onClick={() => setCurrentPage((prev) => prev - 1)}
+                      className="min-w-10 h-10 px-3 rounded-lg text-sm bg-zinc-700/50 text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     >
-                      {i + 1}
+                      ←
                     </button>
-                  ))}
-                  <button
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage((prev) => prev + 1)}
-                    className="px-3 py-1.5 rounded-lg text-sm bg-zinc-700/50 text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                  >
-                    →
-                  </button>
-                </div>
-              )}
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i}
+                        aria-label={`Ir a la página ${i + 1}`}
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${
+                          currentPage === i + 1
+                            ? "bg-red-600 text-white"
+                            : "bg-zinc-700/50 text-gray-400 hover:text-white"
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                    <button
+                      disabled={currentPage === totalPages}
+                      aria-label="Página siguiente"
+                      onClick={() => setCurrentPage((prev) => prev + 1)}
+                      className="min-w-10 h-10 px-3 rounded-lg text-sm bg-zinc-700/50 text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    >
+                      →
+                    </button>
+                  </div>
+                )}
+                {filteredMemberships.length > 0 && (
+                  <div className="flex flex-col sm:flex-row items-center gap-4 mt-2">
+                    <div className="flex items-center gap-2 bg-zinc-800/50 border border-zinc-700/50 px-3 py-1.5 rounded-lg">
+                      <span className="text-xs text-gray-400">Filas por página:</span>
+                      <select
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                          setItemsPerPage(Number(e.target.value));
+                          setCurrentPage(1);
+                        }}
+                        className="bg-transparent text-white text-xs font-medium focus:outline-none appearance-none cursor-pointer pr-4 relative"
+                      >
+                        <option value={5} className="bg-zinc-800">5</option>
+                        <option value={10} className="bg-zinc-800">10</option>
+                        <option value={20} className="bg-zinc-800">20</option>
+                        <option value={50} className="bg-zinc-800">50</option>
+                        <option value={100} className="bg-zinc-800">100</option>
+                      </select>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      Mostrando {indexOfFirst + 1}–
+                      {Math.min(indexOfLast, filteredMemberships.length)} de{" "}
+                      {filteredMemberships.length}{" "}
+                      {filteredMemberships.length === 1 ? "jugador" : "jugadores"}
+                    </p>
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>

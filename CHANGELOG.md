@@ -3,6 +3,49 @@
 Todas las modificaciones relevantes del proyecto quedan documentadas aquí, agrupadas por bloque/versión.
 
 ---
+## Bloque 15 — Rediseño vista móvil de jugadores (17/09/2026)
+
+### Nuevas features / UI
+
+- **Vista móvil rediseñada (Cards minimalistas + Bottom Sheet):** Se reemplazó la antigua vista de tarjetas expandibles (botones gigantes con sombras, múltiples badges y parrilla de 6 acciones inline) por un diseño más limpio y minimalista:
+  - Cada jugador se muestra como una **card compacta** con avatar de iniciales (degradado rojo de marca), nombre, categoría · género, indicador de estado (punto + texto) y deuda. Sin badges redundantes ni chevron.
+  - Al tocar una card se despliega un **bottom sheet** (hoja inferior deslizante, patrón iOS/Android) que muestra el resumen del jugador (avatar, nombre, categoría, género, estado, documento, teléfono, deuda actual y total pagado) y las **acciones rápidas** en una cuadrícula discreta de icono + etiqueta: Ver, Pagar, Editar, Condonar, Ajustes y Eliminar (solo admin).
+  - El botón **Condonar** se muestra deshabilitado sin deuda condonable, con nota explicativa en la hoja.
+- **Tabla de escritorio sin cambios:** la vista `md+` mantiene la tabla completa con filas expandibles.
+- **Animaciones:** se agregaron keyframes `slide-up` y `fade-in` para entrada suave del bottom sheet.
+
+### Mejoras de pulido (nivel profesional)
+
+- **Bloqueo de scroll de fondo en Bottom Sheet:** mientras la hoja está abierta, se fija `document.body.style.overflow = "hidden"` (con cleanup al cierre/desmontaje en `useEffect`), evitando que el usuario siga moviendo la lista de jugadores detrás del overlay. Experiencia tipo app nativa.
+- **Optimización de renderizado:** la constante de colores de estado (`MOBILE_STATUS_COLORS`) se movió a nivel de módulo, fuera del `.map()`, para no recrear el objeto por cada jugador en cada render.
+- **Paginación más usable + contador de resultados:** en `MembershipsPage` se mejoraron los objetivos táctiles de la paginación (botones de 40px, ideales para móvil) y se agregó el contador "Mostrando X–Y de Z jugadores" debajo del listado. Nota: la paginación (10 por página) ya existía a nivel de página, no dentro de la vista móvil.
+- **Cambio menor del usuario:** el botón "Ver" ahora abre el modal de detalles con el objeto ya cargado en el listado (sin refetch), manteniendo el historial de pagos porque el endpoint `getMemberships` incluye `payments`. Se removió `getMembershipById` (quedó sin uso) del destructuring para limpiar el error de lint.
+
+### Reglas de negocio tocadas
+
+Ninguna. Solo cambio de presentación (UI/UX) en dispositivos móviles.
+
+### Archivos creados
+
+| Archivo | Cambio |
+|---------|--------|
+| `frontend/src/components/PlayerBottomSheet.jsx` | [NUEVO] Bottom sheet inferior con resumen del jugador y acciones rápidas (Ver, Pagar, Editar, Condonar, Ajustes, Eliminar). |
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `frontend/src/components/MembershipsTable.jsx` | Reemplazada la vista móvil de tarjetas expandibles por cards minimalistas que abren el bottom sheet. Agregados estados `sheetMember`/`isSheetOpen` y handler `openSheet`. Constante de colores de estado movida a nivel de módulo. |
+| `frontend/src/index.css` | Añadidas animaciones `slide-up` y `fade-in` (clases `.animate-slide-up` y `.animate-fade-in`). |
+| `frontend/src/pages/MembershipsPage.jsx` | Paginación con mejores objetivos táctiles (botones 40px) y contador "Mostrando X–Y de Z jugadores". |
+
+### Verificaciones realizadas
+
+- `npm run lint`: sin errores nuevos; los errores/warnings restantes del proyecto son preexistentes en `ProtectedRoutes.jsx`, `AuthContext.jsx`, etc.
+- `npm run build`: build de producción exitoso.
+
+---
+
 ## Bloque 14 — Correcciones Post-QA (17/09/2026)
 
 ### Problemas resueltos
