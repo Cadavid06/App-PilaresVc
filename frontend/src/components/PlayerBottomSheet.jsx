@@ -56,12 +56,12 @@ export default function PlayerBottomSheet({
 }) {
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
+      document.body.classList.add("overflow-hidden");
     } else {
-      document.body.style.overflow = "unset";
+      document.body.classList.remove("overflow-hidden");
     }
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.classList.remove("overflow-hidden");
     };
   }, [isOpen]);
 
@@ -92,7 +92,7 @@ export default function PlayerBottomSheet({
         aria-label="Cerrar"
       />
 
-      <div className="relative w-full max-w-lg bg-zinc-900 border-t border-x border-zinc-700/50 rounded-t-3xl animate-slide-up max-h-[85vh] overflow-y-auto shadow-2xl">
+      <div className="relative w-full max-w-lg bg-zinc-900 border-t border-x border-zinc-700/50 rounded-t-3xl animate-slide-up max-h-[85vh] overflow-y-auto overscroll-contain shadow-2xl">
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="h-1.5 w-12 rounded-full bg-zinc-700" />
@@ -154,9 +154,19 @@ export default function PlayerBottomSheet({
               <p className="text-[11px] uppercase tracking-wider text-gray-400">
                 Deuda actual
               </p>
-              <p className={`mt-1 text-xl font-black ${deuda > 0 ? "text-red-400" : "text-emerald-400"}`}>
-                ${deuda.toLocaleString()}
-              </p>
+              {deuda > 0 ? (
+                <p className="mt-1 text-xl font-black text-red-400">
+                  ${deuda.toLocaleString()}
+                </p>
+              ) : deuda < 0 ? (
+                <p className="mt-1 text-xl font-black text-emerald-400">
+                  A favor: ${Math.abs(deuda).toLocaleString()}
+                </p>
+              ) : (
+                <p className="mt-1 text-xl font-black text-emerald-400">
+                  $0
+                </p>
+              )}
             </div>
             <div className="rounded-2xl border border-zinc-700/50 bg-zinc-800/50 p-3">
               <p className="text-[11px] uppercase tracking-wider text-gray-400">

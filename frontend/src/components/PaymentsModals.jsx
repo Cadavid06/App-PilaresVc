@@ -101,7 +101,13 @@ export default function PaymentsModals({ isOpen, onClose, membership }) {
               </div>
               <div className="border-t border-zinc-600/30 pt-2 flex justify-between items-center">
                 <span className="text-white font-semibold">Deuda actual:</span>
-                <span className="text-red-400 font-bold text-lg">${currentDebt.toLocaleString()}</span>
+                {currentDebt > 0 ? (
+                  <span className="text-red-400 font-bold text-lg">${currentDebt.toLocaleString()}</span>
+                ) : currentDebt < 0 ? (
+                  <span className="text-emerald-400 font-bold text-lg">A favor: ${Math.abs(currentDebt).toLocaleString()}</span>
+                ) : (
+                  <span className="text-emerald-400 font-bold text-lg">$0</span>
+                )}
               </div>
             </div>
           </div>

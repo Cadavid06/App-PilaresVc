@@ -3,6 +3,25 @@
 Todas las modificaciones relevantes del proyecto quedan documentadas aquí, agrupadas por bloque/versión.
 
 ---
+## Bloque 16 — Auditoría QA de vistas (17/09/2026)
+
+### Correcciones implementadas
+
+- **Paginación al buscar:** Al escribir en el input de búsqueda en `MembershipsPage`, se restablece la página a 1 (`setCurrentPage(1)`), previniendo resultados ocultos si se busca desde la página 2 en adelante.
+- **Visualización de saldo a favor:** Tanto en la tabla de escritorio, en la vista móvil de tarjetas (`PlayerBottomSheet`), como en el modal de pagos (`PaymentsModals`), los valores de deuda negativos ahora se muestran explícitamente como `A favor: $X` (en verde), dejando de estar ocultos detrás de un `$0`.
+- **Prevención de cierre de scroll (Mobile):** Al abrir la vista móvil, se bloquea el scroll correctamente usando la clase `overflow-hidden` nativa de Tailwind (`classList.add`), en vez del estilo duro `overflow="unset"`, que desbloqueaba la pantalla inapropiadamente cuando los modales de React estaban montados. Adicionalmente, se agregó `overscroll-contain` a la hoja para prevenir encadenamiento del scroll al rebotar.
+- **Guardas contra crashes:** Se agregó resiliencia mediante coalescencia nula a `m.clientName` (en el filtro de búsqueda) y a `m.deuda` (en las operaciones matemáticas y strings `toLocaleString()`).
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `frontend/src/pages/MembershipsPage.jsx` | Agregado `setCurrentPage(1)` al buscar y guarda `?? ""` en `m.clientName`. |
+| `frontend/src/components/MembershipsTable.jsx` | Soporte para mostrar `A favor: $X` si `deuda < 0` y guardas numéricas. |
+| `frontend/src/components/PlayerBottomSheet.jsx` | Soporte para mostrar saldo a favor, cambio de estilo a `overflow-hidden` y control de `overscroll-contain`. |
+| `frontend/src/components/PaymentsModals.jsx` | Soporte visual para deudas negativas en el modal de cobro. |
+
+---
 ## Bloque 15 — Rediseño vista móvil de jugadores (17/09/2026)
 
 ### Nuevas features / UI

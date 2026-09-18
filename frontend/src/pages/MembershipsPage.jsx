@@ -22,7 +22,7 @@ function MembershipPage() {
   }, []);
 
   const filteredMemberships = membership.filter((m) => {
-    const matchesSearch = m.clientName
+    const matchesSearch = (m.clientName ?? "")
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "all" || m.status === filterStatus;
@@ -79,7 +79,10 @@ function MembershipPage() {
               type="text"
               placeholder="Buscar por nombre..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full sm:w-1/3 bg-zinc-700/50 border border-zinc-600/50 text-white px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
             />
             <div className="flex flex-wrap gap-1.5">
