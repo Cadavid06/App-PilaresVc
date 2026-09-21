@@ -3,6 +3,27 @@
 Todas las modificaciones relevantes del proyecto quedan documentadas aquí, agrupadas por bloque/versión.
 
 ---
+## Bloque 17 — Registro flexible, UI Móvil y variables de entorno (21/09/2026)
+
+### Correcciones implementadas
+
+- **Registro de jugadores simplificado:** Se modificaron el formulario de registro (`MembershipFormPage`) y el modal de edición (`UpdateModals`) para hacer que los campos **Documento, Teléfono, Correo y Fecha de Nacimiento** sean completamente opcionales. El sistema ahora acepta nombres solos para poder hacer un ingreso rápido de la plantilla y llenar los datos demográficos en el futuro.
+- **Base de datos (Nullable):** Se ejecutó una alteración directa en SQL (`ALTER TABLE`) para remover el constraint `NOT NULL` de la columna `documentType` en PostgreSQL, solucionando problemas de cast del ENUM en Sequelize.
+- **Desbordamiento móvil arreglado:** En la página de membresías (`MembershipsPage`), el contenedor de la paginación de la tabla causaba un desbordamiento horizontal en celulares al tener muchas páginas (ej. 130 jugadores). Se corrigió agregando `flex-wrap` al contenedor para que los botones numéricos se envuelvan a la siguiente línea correctamente.
+- **Variables de Entorno CORS:** Se modificó la configuración de orígenes cruzados (`CORS`) en `app.js` para que use `process.env.FRONTEND_URL || "http://localhost:5173"`, facilitando el despliegue dinámico.
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `frontend/src/pages/MembershipFormPage.jsx` | Campos opcionales sin `required`. |
+| `frontend/src/components/UpdateModals.jsx` | Campos opcionales sin `required`. |
+| `backend/src/controllers/membership.controllers.js` | Recepción de campos vacíos como nulos o cadenas vacías sin fallo de validación. |
+| `backend/src/db.js` | Modificación `ALTER TABLE` cruda para `documentType` DROP NOT NULL. |
+| `frontend/src/pages/MembershipsPage.jsx` | Agregado `flex-wrap` a la paginación. |
+| `backend/src/app.js` | Configuración CORS actualizada para usar `process.env.FRONTEND_URL`. |
+
+---
 ## Bloque 16 — Auditoría QA de vistas (17/09/2026)
 
 ### Correcciones implementadas

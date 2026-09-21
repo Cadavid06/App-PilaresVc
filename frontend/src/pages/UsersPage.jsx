@@ -3,11 +3,13 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
   getUsersRequest,
-  updateUserRoleRequest,
+  updateUserRequest,
   deleteUserRequest,
 } from "../api/users";
-import { Users, Shield, Trash2, Plus, RefreshCw, AlertTriangle } from "lucide-react";
+import { Users, Shield, Trash2, Plus, RefreshCw, AlertTriangle, Edit } from "lucide-react";
 import ConfirmModal from "../components/DeleteMembershipModal";
+import EditUserModal from "../components/EditUserModal";
+import UserBottomSheet from "../components/UserBottomSheet";
 
 function UsersPage() {
   const { user: currentUser } = useAuth();
@@ -16,8 +18,11 @@ function UsersPage() {
   const [errors, setErrors] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [successMsg, setSuccessMsg] = useState("");
-
   const [isLoading, setIsLoading] = useState(true);
+
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const loadUsers = async () => {
     try {
@@ -52,7 +57,7 @@ function UsersPage() {
   const handleToggleRole = async (id, currentRole) => {
     const newRole = currentRole === "admin" ? "entrenador" : "admin";
     try {
-      await updateUserRoleRequest(id, newRole);
+      await updateUserRequest(id, { role: newRole });
       setUsers((prev) =>
         prev.map((u) => (u.id === id ? { ...u, role: newRole } : u))
       );
@@ -73,6 +78,13 @@ function UsersPage() {
       setErrors(err.response?.data?.message || "Error al eliminar usuario");
       setConfirmDelete(null);
     }
+  };
+
+  const handleUserUpdate = (updatedUser) => {
+    setUsers((prev) =>
+      prev.map((u) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u))
+    );
+    setSuccessMsg("Usuario actualizado correctamente");
   };
 
   const getBadge = (role) =>
@@ -113,7 +125,7 @@ function UsersPage() {
           </div>
         )}
 
-        <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-700/50 rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-zinc-800/70 backdrop-blur-sm border border-zinc-700/50 rounded-2xl shadow-2xl overflow-hidden hidden md:block">
           <div className="overflow-x-auto">
             <table className="w-full sm:min-w-[640px] text-left text-white whitespace-nowrap sm:whitespace-normal">
               <thead className="bg-gradient-to-r from-red-600/20 to-red-500/20 border-b border-red-500/30">
@@ -183,6 +195,17 @@ function UsersPage() {
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           <button
+                            onClick={() => {
+                              setSelectedUser(u);
+                              setIsEditModalOpen(true);
+                            }}
+                            className="flex items-center gap-1 px-2 py-1 rounded-lg text-sm font-medium transition-all duration-200 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 border border-yellow-500/20"
+                            title="Editar usuario"
+                          >
+                            <Edit size={12} />
+                            <span className="hidden sm:inline">Editar</span>
+                          </button>
+                          <button
                             disabled={!canToggleRole}
                             onClick={() => handleToggleRole(u.id, u.role)}
                             className={`flex items-center gap-1 px-2 py-1 rounded-lg text-sm font-medium transition-all duration-200 ${
@@ -230,6 +253,82 @@ function UsersPage() {
           </div>
         </div>
       </div>
+
+      {/* VISTA MÓVIL (Cards) */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl md:hidden mt-4">
+        <div className="grid grid-cols-1 gap-4">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-8 text-gray-400">
+              <RefreshCw className="animate-spin text-red-500" size={24} />
+              <p>Cargando usuarios...</p>
+            </div>
+          ) : users.length === 0 ? (
+            <div className="py-8 text-center text-gray-400">
+              No hay usuarios registrados
+            </div>
+          ) : (
+            users.map((u) => {
+              const initials = u.email ? u.email.substring(0, 2).toUpperCase() : "U";
+              return (
+                <button
+                  key={u.id}
+                  onClick={() => {
+                    setSelectedUser(u);
+                    setIsBottomSheetOpen(true);
+                  }}
+                  className="bg-zinc-800/50 backdrop-blur-sm border border-zinc-700/50 p-4 rounded-2xl text-left active:scale-95 transition-transform w-full"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-700 text-sm font-black text-white shadow-lg shadow-red-500/20">
+                      {initials}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-bold text-white text-base flex items-center gap-2">
+                        {u.email}
+                        {u.id === currentUser?.id && (
+                          <span className="text-[10px] bg-zinc-600/60 text-gray-400 px-2 py-0.5 rounded-full font-normal">
+                            tú
+                          </span>
+                        )}
+                      </h3>
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${getBadge(u.role)}`}>
+                          <Shield size={10} />
+                          {u.role === "admin" ? "Admin" : "Entrenador"}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(u.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      <UserBottomSheet
+        isOpen={isBottomSheetOpen}
+        onClose={() => setIsBottomSheetOpen(false)}
+        user={selectedUser}
+        currentUser={currentUser}
+        totalAdmins={users.filter(x => x.role === "admin").length}
+        onToggleRole={handleToggleRole}
+        onEdit={(user) => {
+          setSelectedUser(user);
+          setIsEditModalOpen(true);
+        }}
+        onDelete={(user) => setConfirmDelete(user)}
+      />
+
+      <EditUserModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        user={selectedUser}
+        onUpdate={handleUserUpdate}
+      />
 
       {confirmDelete && (
         <ConfirmModal

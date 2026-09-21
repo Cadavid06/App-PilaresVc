@@ -108,7 +108,6 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               name="documentType"
               value={formData.documentType}
               onChange={handleChange}
-              required
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
             >
               <option value="">Selecciona un tipo de documento</option>
@@ -129,7 +128,6 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               onChange={handleChange}
               onInput={(e) => (e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, ""))}
               className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
-              required
             />
           </div>
 
@@ -144,7 +142,6 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               onChange={handleChange}
               onInput={(e) => (e.target.value = e.target.value.replace(/[^0-9+]/g, ""))}
               className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
-              required
             />
           </div>
 
@@ -158,7 +155,6 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               value={formData.clientEmail}
               onChange={handleChange}
               className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
-              required
             />
           </div>
 
@@ -172,7 +168,6 @@ export default function UpdateModals({ isOpen, onClose, membership }) {
               value={formData.birthdate}
               onChange={handleChange}
               className="w-full bg-zinc-700/50 text-white px-3 py-2 rounded-xl border border-zinc-600/50 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition-all duration-200"
-              required
             />
           </div>
 

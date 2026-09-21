@@ -49,6 +49,12 @@ export const createMembership = async (req, res) => {
       clientPhone, clientEmail, birthdate, gender, familyId,
     } = req.body;
 
+    const parsedDocType = documentType?.trim() || null;
+    const parsedDoc = clientDocument?.trim() || null;
+    const parsedPhone = clientPhone?.trim() || null;
+    const parsedEmail = clientEmail?.trim() || null;
+    const parsedBirth = birthdate?.trim() || null;
+
     const isNewPlayer =
       req.body.isNewPlayer === true || req.body.isNewPlayer === "true";
 
@@ -88,8 +94,12 @@ export const createMembership = async (req, res) => {
     const status = statusFromDebt(deuda, monthlyFee);
 
     const newMemberShip = await MemberShip.create({
-      clientName, documentType, clientDocument,
-      clientPhone, clientEmail, birthdate,
+      clientName,
+      documentType: parsedDocType,
+      clientDocument: parsedDoc,
+      clientPhone: parsedPhone,
+      clientEmail: parsedEmail,
+      birthdate: parsedBirth,
       gender: gender === "Femenino" ? "Femenino" : "Masculino",
       familyId: familyId || null,
       status,
@@ -405,24 +415,25 @@ export const updateUserData = async (req, res) => {
   const { id } = req.params;
   const { clientName, documentType, clientDocument, clientPhone, clientEmail, birthdate, gender, familyId } = req.body;
 
-  if (!clientName && !documentType && !clientDocument && !clientPhone && !clientEmail && !birthdate && !gender && familyId === undefined) {
-    return res.status(400).json({ message: "No se enviaron datos válidos para actualizar." });
-  }
-
   try {
     const member = await MemberShip.findByPk(id);
     if (!member) return res.status(404).json({ message: "Jugador no encontrado" });
 
-    await member.update({
-      ...(clientName     && { clientName }),
-      ...(documentType   && { documentType }),
-      ...(clientDocument && { clientDocument }),
-      ...(clientPhone    && { clientPhone }),
-      ...(clientEmail    && { clientEmail }),
-      ...(birthdate      && { birthdate }),
-      ...(gender         && { gender }),
-      ...(familyId !== undefined && { familyId: familyId || null }),
-    });
+    const updates = {};
+    if (clientName !== undefined) updates.clientName = clientName;
+    if (documentType !== undefined) updates.documentType = documentType?.trim() || null;
+    if (clientDocument !== undefined) updates.clientDocument = clientDocument?.trim() || null;
+    if (clientPhone !== undefined) updates.clientPhone = clientPhone?.trim() || null;
+    if (clientEmail !== undefined) updates.clientEmail = clientEmail?.trim() || null;
+    if (birthdate !== undefined) updates.birthdate = birthdate?.trim() || null;
+    if (gender !== undefined) updates.gender = gender;
+    if (familyId !== undefined) updates.familyId = familyId?.trim() || null;
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: "No se enviaron datos para actualizar." });
+    }
+
+    await member.update(updates);
 
     await member.reload({ include: fullInclude });
     const plain = await enrichMember(toPlain(member));

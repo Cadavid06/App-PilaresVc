@@ -191,13 +191,13 @@ function MembershipFormPage() {
             </p>
           </div>
 
-          {/* Tipo de documento */}
+          {/* Tipo de documento (opcional) */}
           <div>
-            <label className="block text-sm font-semibold text-red-400 mb-1">Tipo de documento</label>
+            <label className="block text-sm font-semibold text-red-400 mb-1">
+              Tipo de documento <span className="text-gray-500 text-xs font-normal">(opcional)</span>
+            </label>
             <select
-              {...register("documentType", {
-                required: "Debes seleccionar un tipo de documento",
-              })}
+              {...register("documentType")}
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500 appearance-none"
             >
               <option value="">Selecciona un tipo de documento</option>
@@ -210,15 +210,16 @@ function MembershipFormPage() {
             )}
           </div>
 
-          {/* Documento */}
+          {/* Documento (opcional) */}
           <div>
-            <label className="block text-sm font-semibold text-red-400 mb-1">Número de documento</label>
+            <label className="block text-sm font-semibold text-red-400 mb-1">
+              Número de documento <span className="text-gray-500 text-xs font-normal">(opcional)</span>
+            </label>
             <input
               type="text"
               placeholder="Número de documento"
               onInput={(e) => (e.target.value = e.target.value.replace(/[^A-Za-z0-9]/g, ""))}
               {...register("clientDocument", {
-                required: "El documento es obligatorio",
                 pattern: { value: /^[A-Za-z0-9]+$/, message: "El documento no puede contener símbolos" }
               })}
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -228,15 +229,16 @@ function MembershipFormPage() {
             )}
           </div>
 
-          {/* Teléfono */}
+          {/* Teléfono (opcional) */}
           <div>
-            <label className="block text-sm font-semibold text-red-400 mb-1">Teléfono</label>
+            <label className="block text-sm font-semibold text-red-400 mb-1">
+              Teléfono <span className="text-gray-500 text-xs font-normal">(opcional)</span>
+            </label>
             <input
               type="tel"
               placeholder="Teléfono"
               onInput={(e) => (e.target.value = e.target.value.replace(/[^0-9+]/g, ""))}
               {...register("clientPhone", {
-                required: "El teléfono es obligatorio",
                 pattern: { value: /^[0-9+]+$/, message: "El teléfono solo puede contener números y el signo +" }
               })}
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -246,15 +248,15 @@ function MembershipFormPage() {
             )}
           </div>
 
-          {/* Correo */}
+          {/* Correo (opcional) */}
           <div>
-            <label className="block text-sm font-semibold text-red-400 mb-1">Correo electrónico</label>
+            <label className="block text-sm font-semibold text-red-400 mb-1">
+              Correo electrónico <span className="text-gray-500 text-xs font-normal">(opcional)</span>
+            </label>
             <input
               type="email"
               placeholder="Correo electrónico"
-              {...register("clientEmail", {
-                required: "El correo es obligatorio",
-              })}
+              {...register("clientEmail")}
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
             {errors.clientEmail && (
@@ -262,14 +264,14 @@ function MembershipFormPage() {
             )}
           </div>
 
-          {/* Fecha de nacimiento */}
+          {/* Fecha de nacimiento (opcional) */}
           <div>
-            <label className="block text-sm font-semibold text-red-400 mb-1">Fecha de nacimiento</label>
+            <label className="block text-sm font-semibold text-red-400 mb-1">
+              Fecha de nacimiento <span className="text-gray-500 text-xs font-normal">(opcional)</span>
+            </label>
             <input
               type="date"
-              {...register("birthdate", {
-                required: "La fecha de nacimiento es obligatoria",
-              })}
+              {...register("birthdate")}
               className="w-full bg-zinc-700/50 border border-zinc-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
             />
             {errors.birthdate && (

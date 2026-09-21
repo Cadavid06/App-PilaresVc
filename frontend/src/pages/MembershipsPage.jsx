@@ -155,7 +155,7 @@ function MembershipPage() {
 
               <div className="flex flex-col items-center gap-3 mt-4">
                 {totalPages > 1 && (
-                  <div className="flex justify-center gap-1.5">
+                  <div className="flex flex-wrap justify-center gap-1.5">
                     <button
                       disabled={currentPage === 1}
                       aria-label="Página anterior"

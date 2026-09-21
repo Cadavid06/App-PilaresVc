@@ -18,6 +18,17 @@ export const connectDB = async () => {
     await sequelize.authenticate();
     console.log("✅ PostgreSQL conectado correctamente");
 
+    // Ejecutar queries crudas para quitar el NOT NULL sin pelear con los ENUMs de Sequelize
+    try {
+      await sequelize.query('ALTER TABLE "memberships" ALTER COLUMN "documentType" DROP NOT NULL;');
+      await sequelize.query('ALTER TABLE "memberships" ALTER COLUMN "clientDocument" DROP NOT NULL;');
+      await sequelize.query('ALTER TABLE "memberships" ALTER COLUMN "clientPhone" DROP NOT NULL;');
+      await sequelize.query('ALTER TABLE "memberships" ALTER COLUMN "clientEmail" DROP NOT NULL;');
+      await sequelize.query('ALTER TABLE "memberships" ALTER COLUMN "birthdate" DROP NOT NULL;');
+    } catch (err) {
+      console.log("Las columnas ya eran opcionales o hubo un aviso:", err.message);
+    }
+
     // sync({ force: false }) crea las tablas si no existen, sin borrar datos
     await sequelize.sync({ force: false });
     console.log("✅ Tablas sincronizadas");
